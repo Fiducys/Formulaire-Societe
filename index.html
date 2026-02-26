@@ -565,7 +565,7 @@
         <p style="margin:0 0 8px;"><strong>Base l&eacute;gale&nbsp;:</strong> ex&eacute;cution d&rsquo;un contrat (art.&nbsp;6.1.b du RGPD) et respect d&rsquo;obligations l&eacute;gales (art.&nbsp;6.1.c du RGPD).</p>
         <p style="margin:0 0 8px;"><strong>Dur&eacute;e de conservation&nbsp;:</strong> vos donn&eacute;es sont conserv&eacute;es pendant toute la dur&eacute;e de la mission et 10&nbsp;ans apr&egrave;s sa cl&ocirc;ture, conform&eacute;ment aux obligations l&eacute;gales applicables aux experts-comptables.</p>
         <p style="margin:0 0 8px;"><strong>Destinataires&nbsp;:</strong> vos donn&eacute;es peuvent &ecirc;tre transmises aux organismes l&eacute;galement habilit&eacute;s (greffe du tribunal, INPI, administrations fiscales et sociales). Elles ne sont jamais transmises &agrave; des tiers &agrave; des fins commerciales.</p>
-        <p style="margin:0 0 12px;"><strong>Vos droits&nbsp;:</strong> conform&eacute;ment au RGPD, vous disposez d&rsquo;un droit d&rsquo;acc&egrave;s, de rectification, d&rsquo;effacement, de limitation et de portabilit&eacute; de vos donn&eacute;es, ainsi que du droit de vous opposer &agrave; leur traitement. Pour exercer ces droits&nbsp;: <strong>info@fiducys.fr</strong> ou par courrier au cabinet.</p>
+        <p style="margin:0 0 12px;"><strong>Vos droits&nbsp;:</strong> conform&eacute;ment au RGPD, vous disposez d&rsquo;un droit d&rsquo;acc&egrave;s, de rectification, d&rsquo;effacement, de limitation et de portabilit&eacute; de vos donn&eacute;es, ainsi que du droit de vous opposer &agrave; leur traitement. Pour exercer ces droits&nbsp;: <strong><span id="rgpd-email"></span></strong> ou par courrier au cabinet.</p>
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:600;color:var(--blue-dark);">
           <input type="checkbox" id="rgpd-consent" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
           <span>J&rsquo;ai lu et j&rsquo;accepte la politique de protection des donn&eacute;es personnelles de Fiducys et consens au traitement de mes donn&eacute;es dans le cadre de ma demande de constitution de soci&eacute;t&eacute;.</span>
@@ -591,7 +591,7 @@
     Document confidentiel destiné à Fiducys — 50, Avenue Victor Hugo — 75116 Paris
   </div>
 </div>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // ── Navigation ──────────────────────────────────────────────────
 
@@ -613,6 +613,11 @@ function onFormeChange() {
   var f = document.getElementById('forme').value;
   isSAS = (f === 'SAS');
   updateManBlocks();
+  // Build email to avoid Cloudflare obfuscation
+  (function(){
+    var el = document.getElementById('rgpd-email');
+    if (el) el.textContent = ['info','fiducys.fr'].join('@');
+  })();
 }
 
 function goToAfterMan() {
@@ -1078,6 +1083,25 @@ function onSSChange(inputId) {
   }
 }
 
+// ── Helpers récapitulatif ────────────────────────────────────
+function v(id) {
+  var e = document.getElementById(id);
+  return (e && e.value && e.value.trim()) ? e.value.trim() : '—';
+}
+
+function rv(name) {
+  var e = document.querySelector('input[name="' + name + '"]:checked');
+  return e ? e.value : '—';
+}
+
+function row(label, val) {
+  return '<tr><td>' + label + '</td><td>' + (val || '—') + '</td></tr>';
+}
+
+function sec(title) {
+  return '<tr class="summary-section-row"><td colspan="2">' + title + '</td></tr>';
+}
+
 function buildSummary() {
   try {
     var nb = parseInt(document.getElementById('nb-assoc').value) || 2;
@@ -1289,7 +1313,7 @@ function validerFormulaire() {
   })
   .catch(function() {
     btn.disabled = false;
-    btn.textContent = '✉ Valider & Envoyer';
+    btn.textContent = '✉️ Valider & Envoyer';
     alert('Erreur lors de l\'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
   });
 }
