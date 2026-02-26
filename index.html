@@ -556,12 +556,29 @@
         <strong>Document confidentiel destiné à Fiducys</strong><br>
         50, Avenue Victor Hugo — 75116 Paris — 01 45 63 44 10
       </div>
+      <!-- RGPD -->
+      <div style="margin:24px 0 20px;padding:18px 20px;background:#f0f4fa;border-radius:6px;border:1px solid #c5d5ea;font-size:12.5px;color:#333;line-height:1.7;">
+        <div style="font-weight:700;font-size:13px;color:var(--blue-dark);margin-bottom:10px;">&#128274; Protection de vos donn&eacute;es personnelles</div>
+        <p style="margin:0 0 8px;">Dans le cadre de votre demande de constitution de soci&eacute;t&eacute;, le cabinet <strong>Fiducys</strong> (50, avenue Victor Hugo &ndash; 75116 Paris) collecte et traite vos donn&eacute;es personnelles en qualit&eacute; de <strong>responsable de traitement</strong>.</p>
+        <p style="margin:0 0 8px;"><strong>Donn&eacute;es collect&eacute;es&nbsp;:</strong> identit&eacute;, coordonn&eacute;es, situation familiale et professionnelle, num&eacute;ro de s&eacute;curit&eacute; sociale et documents justificatifs.</p>
+        <p style="margin:0 0 8px;"><strong>Finalit&eacute;s&nbsp;:</strong> constitution de votre dossier de cr&eacute;ation de soci&eacute;t&eacute;, accomplissement des formalit&eacute;s l&eacute;gales et obligations comptables et fiscales qui en d&eacute;coulent.</p>
+        <p style="margin:0 0 8px;"><strong>Base l&eacute;gale&nbsp;:</strong> ex&eacute;cution d&rsquo;un contrat (art.&nbsp;6.1.b du RGPD) et respect d&rsquo;obligations l&eacute;gales (art.&nbsp;6.1.c du RGPD).</p>
+        <p style="margin:0 0 8px;"><strong>Dur&eacute;e de conservation&nbsp;:</strong> vos donn&eacute;es sont conserv&eacute;es pendant toute la dur&eacute;e de la mission et 10&nbsp;ans apr&egrave;s sa cl&ocirc;ture, conform&eacute;ment aux obligations l&eacute;gales applicables aux experts-comptables.</p>
+        <p style="margin:0 0 8px;"><strong>Destinataires&nbsp;:</strong> vos donn&eacute;es peuvent &ecirc;tre transmises aux organismes l&eacute;galement habilit&eacute;s (greffe du tribunal, INPI, administrations fiscales et sociales). Elles ne sont jamais transmises &agrave; des tiers &agrave; des fins commerciales.</p>
+        <p style="margin:0 0 12px;"><strong>Vos droits&nbsp;:</strong> conform&eacute;ment au RGPD, vous disposez d&rsquo;un droit d&rsquo;acc&egrave;s, de rectification, d&rsquo;effacement, de limitation et de portabilit&eacute; de vos donn&eacute;es, ainsi que du droit de vous opposer &agrave; leur traitement. Pour exercer ces droits&nbsp;: <strong>info@fiducys.fr</strong> ou par courrier au cabinet.</p>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:600;color:var(--blue-dark);">
+          <input type="checkbox" id="rgpd-consent" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+          <span>J&rsquo;ai lu et j&rsquo;accepte la politique de protection des donn&eacute;es personnelles de Fiducys et consens au traitement de mes donn&eacute;es dans le cadre de ma demande de constitution de soci&eacute;t&eacute;.</span>
+        </label>
+        <div id="rgpd-error" style="display:none;color:#c0392b;font-size:12px;margin-top:8px;padding:6px 10px;background:#fdecea;border-radius:3px;">&#9888; Vous devez accepter la politique de protection des donn&eacute;es pour pouvoir envoyer le formulaire.</div>
+      </div>
+
       <div class="nav">
         <button class="btn btn-secondary" onclick="goTo(3)">‹ Retour</button>
         <span class="step-count">Étape 5 / 5</span>
         <div style="display:flex;gap:12px;align-items:center;">
           <button class="btn btn-blue" onclick="window.print()">🖨&nbsp; Imprimer / PDF</button>
-          <button class="btn btn-valider" onclick="validerFormulaire()">✉&nbsp; Valider &amp; Envoyer</button>
+          <button class="btn btn-valider" onclick="validerAvecRGPD()">✉&nbsp; Valider &amp; Envoyer</button>
         </div>
       </div>
       <div id="confirm-msg" style="display:none;margin-top:20px;background:#e8f5e9;border-left:3px solid #4caf50;padding:14px 18px;border-radius:0 4px 4px 0;font-size:14px;color:#2e7d32;">
@@ -1157,6 +1174,18 @@ function updateFileLabel(pid) {
     sp.textContent = '✓ ' + input.files[i].name;
     namesDiv.appendChild(sp);
   }
+}
+
+function validerAvecRGPD() {
+  var cb = document.getElementById('rgpd-consent');
+  var errEl = document.getElementById('rgpd-error');
+  if (!cb || !cb.checked) {
+    if (errEl) errEl.style.display = 'block';
+    if (cb) cb.closest ? cb.closest('label').scrollIntoView({behavior:'smooth'}) : null;
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  validerFormulaire();
 }
 
 function validerFormulaire() {
