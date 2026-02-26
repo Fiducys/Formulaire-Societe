@@ -258,18 +258,14 @@
     @page { margin: 15mm 15mm 15mm 15mm; }
     body { background: white; padding: 0; font-size: 11px; }
     .page { box-shadow: none; max-width: 100%; }
-    .progress, .nav, .conf-footer, #confirm-msg { display: none !important; }
+    .progress, .nav, .conf-footer, #confirm-msg, .btn, .upload-btn, .piece-upload label { display: none !important; }
     .section { display: none !important; }
     #sec-4 { display: block !important; }
-    .autocomplete-list { display: none !important; }
+    .summary-table { font-size: 11px; width: 100%; border-collapse: collapse; }
+    .summary-table td { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; }
+    .summary-section-row td { background: #e8f0fa; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; }
     .header { padding: 16px 24px; }
-    .header-center h1 { font-size: 14px; }
     .content { padding: 16px 24px; }
-    .sec-head { margin-bottom: 16px; padding-bottom: 10px; }
-    .summary-table { font-size: 11px; }
-    .summary-table td { padding: 5px 8px; }
-    .summary-section-row td { font-size: 10px; padding: 5px 8px; }
-    .notice { font-size: 10px; padding: 8px 12px; }
   }
   @media (max-width: 600px) {
     .header { padding: 20px; grid-template-columns: 60px 1fr; gap: 12px; }
@@ -324,7 +320,7 @@
 
       <div class="grid g2">
         <div class="field gc2">
-          <label>Dénomination sociale <span class="req">*</span></label>
+          <label>Dénomination sociale</label>
           <input type="text" id="denomination" placeholder="Ex : Dupont Conseil">
         </div>
         <div class="field">
@@ -332,7 +328,7 @@
           <input type="text" id="sigle">
         </div>
         <div class="field">
-          <label>Forme juridique <span class="req">*</span></label>
+          <label>Forme juridique</label>
           <select id="forme" onchange="onFormeChange()">
             <option value="SAS">SAS — Société par Actions Simplifiée</option>
             <option value="SARL">SARL — Société à Responsabilité Limitée</option>
@@ -342,19 +338,19 @@
 
       <div class="grid g1">
         <div class="field">
-          <label>Objet social <span class="req">*</span></label>
+          <label>Objet social</label>
           <textarea id="objet" rows="3" placeholder="Décrivez précisément l'activité principale de la société..."></textarea>
         </div>
       </div>
 
       <div class="grid g2">
         <div class="field">
-          <label>Capital social <span class="req">*</span> <span class="note">(pas de minimum légal)</span></label>
+          <label>Capital social <span class="note">(pas de minimum légal)</span></label>
           <input type="number" id="capital" placeholder="Ex : 1 000" min="1">
         </div>
         <div class="field">
-          <label>Mois de clôture de l'exercice <span class="req">*</span></label>
-          <select id="cloture">
+          <label>Mois de clôture de l'exercice</label>
+          <select id="cloture" onchange="validateCloture1()">
             <option value="">— Sélectionner —</option>
             <option>Janvier</option><option>Février</option><option>Mars</option>
             <option>Avril</option><option>Mai</option><option>Juin</option>
@@ -364,25 +360,26 @@
         </div>
         <div class="field gc2">
           <label>Date de clôture du 1er exercice <span class="note">(durée maximale de 23 mois)</span></label>
-          <input type="date" id="cloture1">
+          <input type="date" id="cloture1" onchange="validateCloture1()">
         </div>
+        <div id="cloture1-error" style="display:none;color:#c0392b;font-size:12px;margin-top:4px;padding:6px 10px;background:#fdecea;border-radius:3px;border-left:3px solid #c0392b;"></div>
       </div>
 
       <div class="sub">
         <div class="sub-title">Adresse du siège social (1)</div>
         <div class="grid g1" style="margin-bottom:12px;">
           <div class="field autocomplete-wrap">
-            <label>Adresse <span class="req">*</span></label>
+            <label>Adresse</label>
             <input type="text" id="adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off" >
           </div>
         </div>
         <div class="grid g3">
           <div class="field autocomplete-wrap">
-            <label>Code postal <span class="req">*</span></label>
+            <label>Code postal</label>
             <input type="text" id="cp" placeholder="75000"  autocomplete="off">
           </div>
           <div class="field">
-            <label>Ville <span class="req">*</span></label>
+            <label>Ville</label>
             <input type="text" id="ville" placeholder="Paris">
           </div>
           <div class="field">
@@ -398,7 +395,7 @@
 
       <div class="grid g2">
         <div class="field">
-          <label>Nombre d'associés <span class="req">*</span></label>
+          <label>Nombre d'associés</label>
           <select id="nb-assoc" onchange="updateAssocCount(this.value)">
             <option value="1">1 associé</option>
             <option value="2" selected>2 associés</option>
@@ -428,13 +425,13 @@
         </div>
       </div>
       <div id="assoc-container"></div>
+      <div id="capital-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fdecea;border-radius:3px;border-left:3px solid #c0392b;"></div>
       <div class="notice">
-        <strong>(2) Situation familiale :</strong> M = Marié (date + régime) · P = Pacsé · C = Célibataire · D = Divorcé · V = Veuf/Veuve
       </div>
       <div class="nav">
         <button class="btn btn-secondary" onclick="goTo(0)">‹ Précédent</button>
         <span class="step-count">Étape 2 / 5</span>
-        <button class="btn btn-primary" onclick="goTo(2)">Suivant ›</button>
+        <button class="btn btn-primary" onclick="goToAssocNext()">Suivant ›</button>
       </div>
     </div>
 
@@ -444,133 +441,23 @@
         <div class="sec-num">3</div>
         <div class="sec-info">
           <h2>Mandataire Social</h2>
-          <p id="man-subtitle">Président de la SAS</p>
         </div>
       </div>
 
-      <div class="grid g2">
+      <div class="grid g2" style="margin-bottom:20px;">
         <div class="field">
-          <label>Qualité <span class="req">*</span></label>
-          <select id="man-qualite" onchange="onMandataireQualite()">
-            <option value="associe">Associé</option>
-            <option value="non-associe">Non Associé</option>
-          </select>
-        </div>
-        <div class="field" id="man-assoc-select-wrap">
-          <label>Sélectionner l'associé <span class="req">*</span></label>
-          <select id="man-assoc-select">
-            <option value="">— Sélectionner —</option>
+          <label>Nombre de mandataires sociaux</label>
+          <select id="nb-man" onchange="updateManBlocks()">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
           </select>
         </div>
       </div>
 
-      <!-- Champs Non Associé -->
-      <div id="man-non-assoc-fields" style="display:none;">
-        <div class="grid g2">
-          <div class="field">
-            <label>Nom <span class="req">*</span></label>
-            <input type="text" id="man-nom">
-          </div>
-          <div class="field">
-            <label>Prénom <span class="req">*</span></label>
-            <input type="text" id="man-prenom">
-          </div>
-          <div class="field">
-            <label>Date de naissance</label>
-            <input type="date" id="man-naiss">
-          </div>
-          <div class="field">
-            <label>Lieu de naissance</label>
-            <input type="text" id="man-lieu-naiss">
-          </div>
-          <div class="field">
-            <label>Nationalité</label>
-            <input type="text" id="man-nat" value="Française">
-          </div>
-          <div class="field">
-            <label>N° Sécurité Sociale</label>
-            <input type="text" id="man-ss" placeholder="1 00 00 00 000 000 00">
-          </div>
-          <div class="field gc2 autocomplete-wrap">
-            <label>Adresse</label>
-            <input type="text" id="man-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off" >
-          </div>
-          <div class="field autocomplete-wrap">
-            <label>Code postal</label>
-            <input type="text" id="man-cp" placeholder="75000"  autocomplete="off">
-          </div>
-          <div class="field">
-            <label>Ville</label>
-            <input type="text" id="man-ville" placeholder="Paris">
-          </div>
-          <div class="field">
-            <label>N° téléphone</label>
-            <input type="tel" id="man-tel">
-          </div>
-          <div class="field">
-            <label>Adresse e-mail</label>
-            <input type="email" id="man-email">
-          </div>
-        </div>
-
-        <div class="sub">
-          <div class="sub-title">Situation familiale (2)</div>
-          <div class="grid g2">
-            <div class="field gc2">
-              <label>Situation</label>
-              <div class="choices">
-                <label class="choice"><input type="radio" name="man-sit" value="M"><span>Marié(e)</span></label>
-                <label class="choice"><input type="radio" name="man-sit" value="P"><span>Pacsé(e)</span></label>
-                <label class="choice"><input type="radio" name="man-sit" value="C"><span>Célibataire</span></label>
-                <label class="choice"><input type="radio" name="man-sit" value="D"><span>Divorcé(e)</span></label>
-                <label class="choice"><input type="radio" name="man-sit" value="V"><span>Veuf/Veuve</span></label>
-              </div>
-            </div>
-            <div class="field">
-              <label>Nom de jeune fille</label>
-              <input type="text" id="man-njf">
-            </div>
-            <div class="field">
-              <label>Régime matrimonial</label>
-              <select id="man-regime">
-                <option value="">— Sélectionner —</option>
-                <option>Communauté légale réduite aux acquêts</option>
-                <option>Séparation de biens</option>
-                <option>Communauté universelle</option>
-                <option>Participation aux acquêts</option>
-                <option>Sans objet</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Date et lieu du mariage</label>
-              <input type="text" id="man-mariage" placeholder="JJ/MM/AAAA — Ville">
-            </div>
-            <div class="field">
-              <label>Date du contrat de mariage</label>
-              <input type="date" id="man-contrat">
-            </div>
-            <div class="field gc2">
-              <label>Coordonnées du notaire <span class="note">(si contrat de mariage)</span></label>
-              <input type="text" id="man-notaire">
-            </div>
-          </div>
-        </div>
-
-        <div class="sub">
-          <div class="sub-title">Situation professionnelle</div>
-          <div class="prof-options">
-            <label class="choice"><input type="radio" name="man-prof" value="salarie"><span>Salarié ou assimilé (dirigeant de SA ou SAS, gérant minoritaire de SARL)</span></label>
-            <label class="choice"><input type="radio" name="man-prof" value="liberal"><span>Profession libérale — préciser :</span></label>
-            <input type="text" id="man-prof-lib" placeholder="Préciser la profession libérale" style="margin:4px 0 8px;">
-            <label class="choice"><input type="radio" name="man-prof" value="gerant-maj"><span>Gérant majoritaire de SARL</span></label>
-            <label class="choice"><input type="radio" name="man-prof" value="exploitant"><span>Exploitant individuel (commerçant ou artisan)</span></label>
-            <label class="choice"><input type="radio" name="man-prof" value="sans"><span>Sans</span></label>
-            <label class="choice"><input type="radio" name="man-prof" value="retraite"><span>Retraité</span></label>
-            <label class="choice"><input type="radio" name="man-prof" value="autre"><span>Autre situation — préciser :</span></label>
-            <input type="text" id="man-prof-autre" placeholder="Autre situation à préciser" style="margin-top:4px;">
-          </div>
-        </div>
-      </div>
+      <div id="man-notice" class="notice" style="margin-bottom:16px;"></div>
+      <div id="man-president-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fdecea;border-radius:3px;border-left:3px solid #c0392b;"></div>
+      <div id="man-blocks-container"></div>
 
       <div class="nav">
         <button class="btn btn-secondary" onclick="goTo(1)">‹ Précédent</button>
@@ -708,11 +595,14 @@ var isSAS = true;
 function onFormeChange() {
   var f = document.getElementById('forme').value;
   isSAS = (f === 'SAS');
-  var sub = document.getElementById('man-subtitle');
-  if (sub) sub.textContent = isSAS ? 'Président de la SAS' : 'Gérant de la SARL';
+  updateManBlocks();
 }
 
 function goToAfterMan() {
+  if (!checkPresidentUnique()) {
+    document.getElementById('man-president-error').scrollIntoView({behavior:'smooth'});
+    return;
+  }
   goTo(3);
 }
 
@@ -725,61 +615,68 @@ onFormeChange();
 // ── Associés ────────────────────────────────────────────────────
 function makeAssocBlock(idx) {
   var n = idx + 1;
+  var p = 'a' + idx;
   var html = '';
   html += '<div class="assoc-card" id="assoc-card-' + idx + '">';
-  html += '<div class="assoc-header"><div class="assoc-badge">' + n + '</div><span>Associé ' + n + '</span></div>';
+  html += '<div class="assoc-header"><div class="assoc-badge">' + n + '</div><span>Associ\u00e9 ' + n + '</span></div>';
   html += '<div class="assoc-body">';
   html += '<div class="grid g2">';
-  html += '<div class="field"><label>Nom <span class="req">*</span></label><input type="text" id="a' + idx + '-nom" oninput="refreshMandataireList()"></div>';
-  html += '<div class="field"><label>Prénom <span class="req">*</span></label><input type="text" id="a' + idx + '-prenom" oninput="refreshMandataireList()"></div>';
-  html += '<div class="field"><label>Nom de jeune fille</label><input type="text" id="a' + idx + '-njf"></div>';
-  html += '<div class="field"><label>Nationalité</label><input type="text" id="a' + idx + '-nat" value="Française"></div>';
-  html += '<div class="field"><label>Date de naissance</label><input type="date" id="a' + idx + '-naiss"></div>';
-  html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="a' + idx + '-lieu"></div>';
-  html += '<div class="field gc2 autocomplete-wrap"><label>Adresse</label>';
-  html += '<input type="text" id="a' + idx + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off">';
+  html += '<div class="field"><label>Nom <span class="req">*</span></label><input type="text" id="' + p + '-nom" oninput="refreshMandataireList()"></div>';
+  html += '<div class="field"><label>Pr\u00e9nom <span class="req">*</span></label><input type="text" id="' + p + '-prenom" oninput="refreshMandataireList()"></div>';
+  html += '<div class="field"><label>Nom de jeune fille</label><input type="text" id="' + p + '-njf"></div>';
+  html += '<div class="field"><label>Nationalit\u00e9</label><input type="text" id="' + p + '-nat" value="Fran\u00e7aise"></div>';
+  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss"></div>';
+  html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="' + p + '-lieu"></div>';
+  html += '<div class="field gc2"><label>Adresse</label><input type="text" id="' + p + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off"></div>';
+  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off"></div>';
+  html += '<div class="field"><label>Ville</label><input type="text" id="' + p + '-ville" placeholder="Paris"></div>';
+  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel"></div>';
+  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email"></div>';
+  html += '<div class="field"><label>N\u00b0 S\u00e9curit\u00e9 Sociale</label>';
+  html += '<input type="text" id="' + p + '-ss" placeholder="1 00 00 00 000 000 00" onchange="onSSChange(this.id)">';
+  html += '<div class="ss-feedback" id="' + p + '-ss-err" style="display:none;font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;"></div>';
   html += '</div>';
-  html += '<div class="field autocomplete-wrap"><label>Code postal</label>';
-  html += '<input type="text" id="a' + idx + '-cp" placeholder="75000" autocomplete="off">';
-  
-  html += '<div class="field"><label>Ville</label><input type="text" id="a' + idx + '-ville" placeholder="Paris"></div>';
-  html += '<div class="field"><label>N° téléphone</label><input type="tel" id="a' + idx + '-tel"></div>';
-  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="a' + idx + '-email"></div>';
-  html += '<div class="field"><label>N° Sécurité Sociale</label><input type="text" id="a' + idx + '-ss" placeholder="1 00 00 00 000 000 00"></div>';
-  html += '<div class="field"><label>Détention du capital (%)</label><input type="number" id="a' + idx + '-pct" min="0" max="100" placeholder="Ex : 50"></div>';
+  html += '<div class="field"><label>D\u00e9tention du capital (%)</label><input type="number" id="' + p + '-pct" min="0" max="100" placeholder="Ex : 50" onchange="checkCapitalTotal()"></div>';
   html += '</div>';
   html += '<hr class="divider">';
-  html += '<div class="sub"><div class="sub-title">Situation familiale (2)</div><div class="grid g2">';
+  html += '<div class="sub"><div class="sub-title">Situation familiale</div><div class="grid g2">';
   html += '<div class="field gc2"><label>Situation</label><div class="choices">';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-sit" value="M"><span>Marié(e)</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-sit" value="P"><span>Pacsé(e)</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-sit" value="C"><span>Célibataire</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-sit" value="D"><span>Divorcé(e)</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-sit" value="V"><span>Veuf/Veuve</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="M" onchange="onSitChange(\'' + p + '\')"><span>Mari\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="P" onchange="onSitChange(\'' + p + '\')"><span>Pacs\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="C" onchange="onSitChange(\'' + p + '\')"><span>C\u00e9libataire</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="D" onchange="onSitChange(\'' + p + '\')"><span>Divorc\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="V" onchange="onSitChange(\'' + p + '\')"><span>Veuf/Veuve</span></label>';
   html += '</div></div>';
-  html += '<div class="field"><label>Régime matrimonial</label><select id="a' + idx + '-regime">';
-  html += '<option value="">— Sélectionner —</option>';
-  html += '<option>Communauté légale réduite aux acquêts</option>';
-  html += '<option>Séparation de biens</option>';
-  html += '<option>Communauté universelle</option>';
-  html += '<option>Participation aux acquêts</option>';
+  // sit-wrap: only visible if M or P
+  html += '<div id="' + p + '-sit-wrap" style="display:none" class="gc2" style="display:none">';
+  html += '<div class="grid g2" style="margin:0">';
+  html += '<div class="field"><label>R\u00e9gime matrimonial</label>';
+  html += '<select id="' + p + '-regime" onchange="onRegimeChange(this.id)">';
+  html += '<option value="">\u2014 S\u00e9lectionner \u2014</option>';
+  html += '<option>Communaut\u00e9 l\u00e9gale r\u00e9duite aux acqu\u00eats</option>';
+  html += '<option>S\u00e9paration de biens</option>';
+  html += '<option>Communaut\u00e9 universelle</option>';
+  html += '<option>Participation aux acqu\u00eats</option>';
   html += '<option>Sans objet</option>';
   html += '</select></div>';
-  html += '<div class="field"><label>Date et lieu du mariage</label><input type="text" id="a' + idx + '-mariage" placeholder="JJ/MM/AAAA — Ville"></div>';
-  html += '<div class="field"><label>Date du contrat de mariage</label><input type="date" id="a' + idx + '-contrat"></div>';
-  html += '<div class="field gc2"><label>Coordonnées du notaire</label><input type="text" id="a' + idx + '-notaire"></div>';
+  html += '<div class="field"><label>Date et lieu du mariage/PACS</label><input type="text" id="' + p + '-mariage" placeholder="JJ/MM/AAAA \u2014 Ville"></div>';
+  html += '<div class="field" id="' + p + '-contrat-wrap" style="display:none"><label>Date du contrat de mariage/PACS</label><input type="date" id="' + p + '-contrat"></div>';
+  html += '<div class="field gc2" id="' + p + '-notaire-wrap" style="display:none"><label>Coordonn\u00e9es du notaire</label><input type="text" id="' + p + '-notaire"></div>';
+  html += '</div>';
+  html += '</div>'; // end sit-wrap
   html += '</div></div>';
   html += '<hr class="divider">';
   html += '<div class="sub"><div class="sub-title">Situation professionnelle</div><div class="prof-options">';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="salarie"><span>Salarié ou assimilé (dirigeant de SA ou SAS, gérant minoritaire de SARL)</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="liberal"><span>Profession libérale — préciser :</span></label>';
-  html += '<input type="text" id="a' + idx + '-prof-lib" placeholder="Préciser la profession" style="margin:4px 0 8px;">';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="gerant-maj"><span>Gérant majoritaire de SARL</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="exploitant"><span>Exploitant individuel</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="sans"><span>Sans</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="retraite"><span>Retraité</span></label>';
-  html += '<label class="choice"><input type="radio" name="a' + idx + '-prof" value="autre"><span>Autre — préciser :</span></label>';
-  html += '<input type="text" id="a' + idx + '-prof-autre" placeholder="Autre situation" style="margin-top:4px;">';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="salarie"><span>Salari\u00e9 ou assimil\u00e9 (dirigeant de SA ou SAS, g\u00e9rant minoritaire de SARL)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="liberal"><span>Profession lib\u00e9rale \u2014 pr\u00e9ciser :</span></label>';
+  html += '<input type="text" id="' + p + '-prof-lib" placeholder="Pr\u00e9ciser la profession" style="margin:4px 0 8px;">';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="gerant-maj"><span>G\u00e9rant majoritaire de SARL</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="exploitant"><span>Exploitant individuel</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="sans"><span>Sans</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="retraite"><span>Retrait\u00e9</span></label>';
+    html += '<label class="choice"><input type="radio" name="\' + p + \'-prof" value="demandeur"><span>Demandeur d’emploi</span></label>\'';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="autre"><span>Autre \u2014 pr\u00e9ciser :</span></label>';
+  html += '<input type="text" id="' + p + '-prof-autre" placeholder="Autre situation" style="margin-top:4px;">';
   html += '</div></div>';
   html += '</div></div>';
   return html;
@@ -797,52 +694,366 @@ function updateAssocCount(n) {
 document.getElementById('nb-assoc').addEventListener('change', function(){ updateAssocCount(this.value); });
 updateAssocCount(2);
 
-// ── Mandataire ──────────────────────────────────────────────────
-function refreshMandataireList() {
-  var nb = parseInt(document.getElementById('nb-assoc').value);
-  var sel = document.getElementById('man-assoc-select');
-  var prev = sel.value;
-  sel.innerHTML = '<option value="">— Sélectionner —</option>';
-  for (var i = 0; i < nb; i++) {
+// ── Mandataire — blocs dynamiques ────────────────────────────
+function makeManBlock(idx, nbAssoc) {
+  var n = idx + 1;
+  var p = 'man' + idx;
+  var forme = document.getElementById('forme') ? document.getElementById('forme').value : 'SAS';
+  var isSARLlocal = (forme === 'SARL');
+  var fonctionOpts = isSARLlocal
+    ? '<option value="gerant">G\u00e9rant(e)</option>'
+    : '<option value="president">Pr\u00e9sident(e)</option><option value="dg">Directeur(trice) G\u00e9n\u00e9ral(e)</option>';
+
+  // Build assoc options
+  var assocOpts = '<option value="">\u2014 S\u00e9lectionner \u2014</option>';
+  for (var i = 0; i < nbAssoc; i++) {
     var nomEl = document.getElementById('a' + i + '-nom');
     var preEl = document.getElementById('a' + i + '-prenom');
     var nom = nomEl ? nomEl.value.trim() : '';
     var pre = preEl ? preEl.value.trim() : '';
-    var lbl = [nom, pre].filter(Boolean).join(' ') || ('Associé ' + (i + 1));
-    var opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = lbl;
-    if (String(i) === prev) opt.selected = true;
-    sel.appendChild(opt);
+    var lbl = [nom, pre].filter(Boolean).join(' ') || ('Associ\u00e9 ' + (i + 1));
+    assocOpts += '<option value="' + i + '">' + lbl + '</option>';
+  }
+
+  var html = '<div class="assoc-card" id="man-card-' + idx + '" style="margin-bottom:16px;">';
+  html += '<div class="assoc-header"><div class="assoc-badge">' + n + '</div><span>Mandataire ' + n + '</span></div>';
+  html += '<div class="assoc-body">';
+  html += '<div class="grid g2">';
+  // Qualité
+  html += '<div class="field"><label>Qualit\u00e9</label>';
+  html += '<select id="' + p + '-qualite" onchange="onManQualiteChange(' + idx + ',' + nbAssoc + ')">';
+  html += '<option value="associe">Associ\u00e9</option>';
+  html += '<option value="non-associe">Non Associ\u00e9</option>';
+  html += '</select></div>';
+  // Fonction
+  html += '<div class="field"><label>Fonction</label>';
+  html += '<select id="' + p + '-fonction" onchange="checkPresidentUnique()">' + fonctionOpts + '</select></div>';
+  html += '</div>';
+  // Associé select
+  html += '<div class="grid g2" id="' + p + '-assoc-wrap">';
+  html += '<div class="field"><label>S\u00e9lectionner l\'associ\u00e9</label>';
+  html += '<select id="' + p + '-assoc-select">' + assocOpts + '</select></div>';
+  html += '</div>';
+  // Non-associé fields
+  html += '<div id="' + p + '-non-assoc-fields" style="display:none;">';
+  html += '<div class="grid g2">';
+  html += '<div class="field"><label>Nom</label><input type="text" id="' + p + '-nom"></div>';
+  html += '<div class="field"><label>Pr\u00e9nom</label><input type="text" id="' + p + '-prenom"></div>';
+  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss"></div>';
+  html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="' + p + '-lieu-naiss"></div>';
+  html += '<div class="field"><label>Nationalit\u00e9</label><input type="text" id="' + p + '-nat" value="Fran\u00e7aise"></div>';
+  html += '<div class="field"><label>N\u00b0 S\u00e9curit\u00e9 Sociale</label>';
+  html += '<input type="text" id="' + p + '-ss" placeholder="1 00 00 00 000 000 00" onchange="onSSChange(this.id)">';
+  html += '</div>';
+  html += '<div class="field gc2"><label>Adresse</label><input type="text" id="' + p + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off"></div>';
+  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off"></div>';
+  html += '<div class="field"><label>Ville</label><input type="text" id="' + p + '-ville" placeholder="Paris"></div>';
+  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel"></div>';
+  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email"></div>';
+  html += '</div>';
+  // Situation familiale
+  html += '<div class="sub"><div class="sub-title">Situation familiale</div><div class="grid g2">';
+  html += '<div class="field gc2"><label>Situation</label><div class="choices">';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="M" onchange="onSitChange(\'' + p + '\')"><span>Mari\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="P" onchange="onSitChange(\'' + p + '\')"><span>Pacs\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="C" onchange="onSitChange(\'' + p + '\')"><span>C\u00e9libataire</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="D" onchange="onSitChange(\'' + p + '\')"><span>Divorc\u00e9(e)</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-sit" value="V" onchange="onSitChange(\'' + p + '\')"><span>Veuf/Veuve</span></label>';
+  html += '</div></div>';
+  html += '<div class="field"><label>Nom de jeune fille</label><input type="text" id="' + p + '-njf"></div>';
+  html += '<div id="' + p + '-sit-wrap" style="display:none" class="gc2"><div class="grid g2" style="margin:0">';
+  html += '<div class="field"><label>R\u00e9gime matrimonial</label>';
+  html += '<select id="' + p + '-regime" onchange="onRegimeChange(this.id)">';
+  html += '<option value="">\u2014 S\u00e9lectionner \u2014</option>';
+  html += '<option>Communaut\u00e9 l\u00e9gale r\u00e9duite aux acqu\u00eats</option>';
+  html += '<option>S\u00e9paration de biens</option>';
+  html += '<option>Communaut\u00e9 universelle</option>';
+  html += '<option>Participation aux acqu\u00eats</option>';
+  html += '<option>Sans objet</option>';
+  html += '</select></div>';
+  html += '<div class="field"><label>Date et lieu du mariage/PACS</label><input type="text" id="' + p + '-mariage" placeholder="JJ/MM/AAAA \u2014 Ville"></div>';
+  html += '<div class="field" id="' + p + '-contrat-wrap" style="display:none"><label>Date du contrat de mariage/PACS</label><input type="date" id="' + p + '-contrat"></div>';
+  html += '<div class="field gc2" id="' + p + '-notaire-wrap" style="display:none"><label>Coordonn\u00e9es du notaire</label><input type="text" id="' + p + '-notaire"></div>';
+  html += '</div></div>';
+  html += '</div></div>';
+  // Situation professionnelle
+  html += '<div class="sub"><div class="sub-title">Situation professionnelle</div><div class="prof-options">';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="salarie"><span>Salari\u00e9 ou assimil\u00e9</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="liberal"><span>Profession lib\u00e9rale \u2014 pr\u00e9ciser :</span></label>';
+  html += '<input type="text" id="' + p + '-prof-lib" placeholder="Pr\u00e9ciser" style="margin:4px 0 8px;">';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="gerant-maj"><span>G\u00e9rant majoritaire de SARL</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="exploitant"><span>Exploitant individuel</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="sans"><span>Sans</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="retraite"><span>Retrait\u00e9</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="demandeur"><span>Demandeur d\u2019emploi</span></label>';
+  html += '<label class="choice"><input type="radio" name="' + p + '-prof" value="autre"><span>Autre \u2014 pr\u00e9ciser :</span></label>';
+  html += '<input type="text" id="' + p + '-prof-autre" placeholder="Autre situation" style="margin-top:4px;">';
+  html += '</div></div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function onManQualiteChange(idx, nbAssoc) {
+  var p = 'man' + idx;
+  var q = document.getElementById(p + '-qualite').value;
+  var assocWrap = document.getElementById(p + '-assoc-wrap');
+  var nonAssocFields = document.getElementById(p + '-non-assoc-fields');
+  if (assocWrap) assocWrap.style.display = (q === 'associe') ? '' : 'none';
+  if (nonAssocFields) nonAssocFields.style.display = (q === 'non-associe') ? '' : 'none';
+}
+
+function checkPresidentUnique() {
+  // Only relevant for SAS
+  var forme = document.getElementById('forme') ? document.getElementById('forme').value : 'SAS';
+  if (forme !== 'SAS') { 
+    var errEl = document.getElementById('man-president-error');
+    if (errEl) errEl.style.display = 'none';
+    return true;
+  }
+  var nb = parseInt(document.getElementById('nb-man') ? document.getElementById('nb-man').value : '1') || 1;
+  var nbPresidents = 0;
+  for (var i = 0; i < nb; i++) {
+    var fonEl = document.getElementById('man' + i + '-fonction');
+    if (fonEl && fonEl.value === 'president') nbPresidents++;
+  }
+  var errEl = document.getElementById('man-president-error');
+  if (nbPresidents > 1) {
+    if (errEl) {
+      errEl.innerHTML = '⚠ Une SAS ne peut avoir qu’un seul Président(e). Vous en avez renseigné <strong>' + nbPresidents + '</strong>. Veuillez corriger les fonctions.';
+      errEl.style.display = 'block';
+    }
+    return false;
+  } else {
+    if (errEl) errEl.style.display = 'none';
+    return true;
   }
 }
 
-function onMandataireQualite() {
-  var q = document.getElementById('man-qualite').value;
-  var wrap = document.getElementById('man-assoc-select-wrap');
-  var fields = document.getElementById('man-non-assoc-fields');
-  if (wrap)   wrap.style.display   = (q === 'associe') ? '' : 'none';
-  if (fields) fields.style.display = (q === 'non-associe') ? '' : 'none';
-}
-onMandataireQualite();
+function updateManBlocks() {
+  var nb = parseInt(document.getElementById('nb-man') ? document.getElementById('nb-man').value : '1') || 1;
+  var nbAssoc = parseInt(document.getElementById('nb-assoc') ? document.getElementById('nb-assoc').value : '2') || 2;
+  var container = document.getElementById('man-blocks-container');
+  if (!container) return;
 
-// ── Récapitulatif ───────────────────────────────────────────────
-function v(id) {
-  var e = document.getElementById(id);
-  return (e && e.value && e.value.trim()) ? e.value.trim() : '—';
+  // Update notice
+  var forme = document.getElementById('forme') ? document.getElementById('forme').value : 'SAS';
+  var noticeEl = document.getElementById('man-notice');
+  if (noticeEl) {
+    if (forme === 'SARL') {
+      noticeEl.innerHTML = '<strong>SARL :</strong> Il peut y avoir un ou plusieurs gérants, associés ou non associés.';
+      noticeEl.style.display = 'block';
+    } else {
+      noticeEl.innerHTML = '<strong>SAS :</strong> Il doit y avoir <strong>un Président(e) obligatoirement</strong> et, éventuellement, un ou plusieurs Directeurs Généraux.';
+      noticeEl.style.display = 'block';
+    }
+  }
+
+  container.innerHTML = '';
+  for (var i = 0; i < nb; i++) {
+    var div = document.createElement('div');
+    div.innerHTML = makeManBlock(i, nbAssoc);
+    container.appendChild(div);
+  }
+  checkPresidentUnique();
 }
 
-function rv(name) {
-  var e = document.querySelector('input[name="' + name + '"]:checked');
-  return e ? e.value : '—';
+// Legacy - kept for compatibility
+function refreshMandataireList() { updateManBlocks(); }
+
+
+// ── Validation clôture ────────────────────────────────────────
+function validateCloture1() {
+  var clotureEl = document.getElementById('cloture');
+  var dateEl    = document.getElementById('cloture1');
+  var errEl     = document.getElementById('cloture1-error');
+  if (!dateEl.value) { errEl.style.display = 'none'; return true; }
+
+  var moisNom = clotureEl.value;
+  var moisMap = {
+    'Janvier':1,'Février':2,'Mars':3,'Avril':4,'Mai':5,'Juin':6,
+    'Juillet':7,'Août':8,'Septembre':9,'Octobre':10,'Novembre':11,'Décembre':12
+  };
+  var moisNum = moisMap[moisNom];
+  var parts = dateEl.value.split('-');
+  var annee = parseInt(parts[0]);
+  var mois  = parseInt(parts[1]);
+  var jour  = parseInt(parts[2]);
+
+  var today    = new Date();
+  var anneeEnCours  = today.getFullYear();
+  var anneeMax = anneeEnCours + 1;
+
+  // Dernier jour du mois indiqué
+  var dernierJour = new Date(annee, moisNum, 0).getDate();
+
+  var errors = [];
+  if (moisNum && mois !== moisNum) {
+    errors.push('Le mois de la date (' + mois + ') ne correspond pas au mois de clôture sélectionné (' + moisNom + ').');
+  }
+  if (moisNum && jour !== dernierJour) {
+    errors.push('La date doit être le dernier jour du mois de clôture : le ' + dernierJour + '/' + (moisNum < 10 ? '0'+moisNum : moisNum) + '/' + annee + '.');
+  }
+  if (annee < anneeEnCours || annee > anneeMax) {
+    errors.push('L\'année doit être ' + anneeEnCours + ' ou ' + anneeMax + ' (pas ' + annee + ').');
+  }
+
+  if (errors.length > 0) {
+    errEl.innerHTML = '⚠ ' + errors.join('<br>⚠ ');
+    errEl.style.display = 'block';
+    return false;
+  } else {
+    errEl.style.display = 'none';
+    return true;
+  }
 }
 
-function row(label, val) {
-  return '<tr><td>' + label + '</td><td>' + (val || '—') + '</td></tr>';
+// ── Navigation Associés (bloque si capital != 100) ───────────
+function goToAssocNext() {
+  var nb = parseInt(document.getElementById('nb-assoc').value) || 2;
+  var total = 0;
+  for (var i = 0; i < nb; i++) {
+    var el = document.getElementById('a' + i + '-pct');
+    // Vide = 0
+    total += (el && el.value !== '') ? (parseFloat(el.value) || 0) : 0;
+  }
+  if (Math.abs(total - 100) > 0.01) {
+    var errEl = document.getElementById('capital-error');
+    if (errEl) {
+      errEl.innerHTML = '⚠ La somme des parts de capital est de <strong>' + total.toFixed(2) + ' %</strong> — elle doit être égale à <strong>100 %</strong> avant de continuer.';
+      errEl.style.cssText = 'display:block;color:#c0392b;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fdecea;border-radius:3px;border-left:3px solid #c0392b;';
+      errEl.scrollIntoView({behavior:'smooth'});
+    }
+    return;
+  }
+  goTo(2);
 }
 
-function sec(title) {
-  return '<tr class="summary-section-row"><td colspan="2">' + title + '</td></tr>';
+// ── Validation capital ─────────────────────────────────────────
+function checkCapitalTotal() {
+  var nb = parseInt(document.getElementById('nb-assoc').value) || 2;
+  var total = 0;
+  for (var i = 0; i < nb; i++) {
+    var el = document.getElementById('a' + i + '-pct');
+    total += (el && el.value !== '') ? (parseFloat(el.value) || 0) : 0;
+  }
+  var errEl = document.getElementById('capital-error');
+  if (!errEl) return;
+  if (Math.abs(total - 100) > 0.01) {
+    errEl.innerHTML = '⚠ La somme des parts de capital est de <strong>' + total.toFixed(2) + ' %</strong> — elle doit être égale à <strong>100 %</strong>.';
+    errEl.style.cssText = 'display:block;color:#c0392b;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fdecea;border-radius:3px;border-left:3px solid #c0392b;';
+  } else {
+    errEl.innerHTML = '✓ Répartition du capital correcte (100 %).';
+    errEl.style.cssText = 'display:block;color:#2e7d32;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#e8f5e9;border-radius:3px;border-left:3px solid #4caf50;';
+    setTimeout(function(){ errEl.style.display = 'none'; }, 3000);
+  }
+}
+
+// ── Régime matrimonial conditionnel ───────────────────────────
+// ── Situation conditionnelle (Marié/Pacsé) ───────────────────
+function onSitChange(prefix) {
+  // prefix = 'a0', 'a1'... or 'man'
+  var radios = document.querySelectorAll('input[name="' + prefix + '-sit"]');
+  var val = '';
+  radios.forEach(function(r){ if (r.checked) val = r.value; });
+  var showSit = (val === 'M' || val === 'P');
+  var sitWrap = document.getElementById(prefix + '-sit-wrap');
+  if (sitWrap) sitWrap.style.display = showSit ? '' : 'none';
+  // Reset regime if hiding
+  if (!showSit) {
+    var regime = document.getElementById(prefix + '-regime');
+    if (regime) regime.value = '';
+    onRegimeChange(prefix + '-regime');
+  }
+}
+
+function onRegimeChange(selectId) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  var prefix = selectId.replace('-regime', '');
+  var val = sel.value;
+  // Show contrat/notaire only if regime is neither blank, "Communauté légale réduite aux acquêts", nor "Sans objet"
+  var excluded = ['', 'Communauté légale réduite aux acquêts', 'Sans objet'];
+  var show = excluded.indexOf(val) === -1;
+  var cw = document.getElementById(prefix + '-contrat-wrap');
+  var nw = document.getElementById(prefix + '-notaire-wrap');
+  if (cw) cw.style.display = show ? '' : 'none';
+  if (nw) nw.style.display = show ? '' : 'none';
+}
+
+function validateSS(val) {
+  // Remove spaces
+  val = val.replace(/\s/g, '');
+  if (val.length !== 15) return false;
+  // First 13 digits + 2 digit key
+  var num = val.substring(0, 13);
+  var cle = parseInt(val.substring(13, 15));
+  // Corsica: replace 2A->19, 2B->18
+  var numCalc = num.replace('2A', '19').replace('2B', '18');
+  if (!/^\d{13}$/.test(numCalc)) return false;
+  var reste = 97 - (parseInt(numCalc) % 97);
+  return reste === cle;
+}
+
+function onSSChange(inputId) {
+  var el = document.getElementById(inputId);
+  if (!el) return;
+  var val = el.value.replace(/[\s\.]/g, '');
+  var errId = inputId + '-err';
+  var errEl = document.getElementById(errId);
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.id = errId;
+    el.parentNode.insertBefore(errEl, el.nextSibling);
+  }
+  errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;';
+  if (val.length === 0) { errEl.style.display = 'none'; return; }
+  if (val.length < 15) {
+    errEl.textContent = 'Saisir les 15 chiffres (' + val.length + '/15)';
+    errEl.style.color = '#888';
+    errEl.style.background = '#f5f5f5';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (validateSS(val)) {
+    errEl.textContent = '✓ Numéro valide';
+    errEl.style.color = '#2e7d32';
+    errEl.style.background = '#e8f5e9';
+  } else {
+    errEl.textContent = '⚠ Numéro de sécurité sociale invalide (clé incorrecte)';
+    errEl.style.color = '#c0392b';
+    errEl.style.background = '#fdecea';
+  }
+  errEl.style.display = 'block';
+}
+function onSSChange(inputId) {
+  var el = document.getElementById(inputId);
+  if (!el) return;
+  var val = el.value.replace(/\s/g, '');
+  // Find feedback div: for associes it's inputId + '-err', for mandataire same
+  var errId = inputId + '-err';
+  var errEl = document.getElementById(errId);
+  if (!errEl) {
+    // Create it next to the input
+    errEl = document.createElement('div');
+    errEl.id = errId;
+    errEl.className = 'ss-feedback';
+    errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;display:none;';
+    el.parentNode.insertBefore(errEl, el.nextSibling);
+  }
+  if (val.length === 0) { errEl.style.display = 'none'; return; }
+  if (val.length < 15) {
+    errEl.textContent = 'Saisir les 15 chiffres (' + val.length + '/15)';
+    errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;color:#888;display:block;';
+    return;
+  }
+  if (validateSS(val)) {
+    errEl.textContent = '✓ Numéro valide';
+    errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;color:#2e7d32;background:#e8f5e9;display:block;';
+  } else {
+    errEl.textContent = '⚠ Numéro de sécurité sociale invalide (clé incorrecte)';
+    errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;color:#c0392b;background:#fdecea;display:block;';
+  }
 }
 
 function buildSummary() {
@@ -864,23 +1075,29 @@ function buildSummary() {
       assocHtml += row('Situation professionnelle', rv('a' + i + '-prof'));
     }
 
-    var manQ = document.getElementById('man-qualite').value;
+    var nbManSum = parseInt(document.getElementById('nb-man') ? document.getElementById('nb-man').value : '1') || 1;
     var manInfo = '';
-    if (manQ === 'associe') {
-      var sel = document.getElementById('man-assoc-select');
-      var selText = (sel && sel.selectedIndex >= 0 && sel.options[sel.selectedIndex]) ? sel.options[sel.selectedIndex].text : '—';
-      manInfo = row('Qualité', 'Associé') + row('Identité', selText);
-    } else {
-      var manNom = v('man-nom');
-      var manPre = v('man-prenom');
-      var manAdr = v('man-adresse');
-      var manCp  = v('man-cp');
-      var manVl  = v('man-ville');
-      manInfo = row('Qualité', 'Non Associé (tiers)')
-        + row('Nom / Prénom', manNom + ' ' + manPre)
-        + row('Adresse', manAdr + (manCp !== '—' ? ', ' + manCp : '') + (manVl !== '—' ? ' ' + manVl : ''))
-        + row('Situation familiale', rv('man-sit'))
-        + row('Situation professionnelle', rv('man-prof'));
+    for (var mi = 0; mi < nbManSum; mi++) {
+      var mp = 'man' + mi;
+      var mQ = document.getElementById(mp + '-qualite') ? document.getElementById(mp + '-qualite').value : 'associe';
+      var mFonEl = document.getElementById(mp + '-fonction');
+      var mFonction = mFonEl && mFonEl.options[mFonEl.selectedIndex] ? mFonEl.options[mFonEl.selectedIndex].text : '—';
+      var mIdent = '—';
+      if (mQ === 'associe') {
+        var mSel = document.getElementById(mp + '-assoc-select');
+        mIdent = mSel && mSel.options[mSel.selectedIndex] ? mSel.options[mSel.selectedIndex].text : '—';
+      } else {
+        var mN = v(mp + '-nom'); var mP = v(mp + '-prenom');
+        mIdent = (mN !== '—' ? mN : '') + (mP !== '—' ? ' ' + mP : '') || '—';
+      }
+      manInfo += sec('Mandataire ' + (mi + 1));
+      manInfo += row('Qualité', mQ === 'associe' ? 'Associé' : 'Non Associé');
+      manInfo += row('Fonction', mFonction);
+      manInfo += row('Identité', mIdent);
+      if (mQ !== 'associe') {
+        manInfo += row('Situation familiale', rv(mp + '-sit'));
+        manInfo += row('Situation professionnelle', rv(mp + '-prof'));
+      }
     }
 
     var forme = document.getElementById('forme').value;
@@ -903,7 +1120,6 @@ function buildSummary() {
     var vlSiege = v('ville');
     html += row('Siège social', adSiege + (cpSiege !== '—' ? ', ' + cpSiege : '') + (vlSiege !== '—' ? ' ' + vlSiege : ''));
     html += assocHtml;
-    html += sec('Mandataire Social');
     html += manInfo;
       html += sec('Pièces jointes');
     filesPieces.forEach(function(fp){
@@ -975,26 +1191,36 @@ function validerFormulaire() {
     fd.append(p + 'Situation professionnelle', rv('a' + i + '-prof'));
   }
 
-  // Mandataire
-  var manQ = document.getElementById('man-qualite').value;
-  fd.append('Mandataire - Qualité', manQ === 'associe' ? 'Associé' : 'Non Associé');
-  if (manQ === 'associe') {
-    var sel = document.getElementById('man-assoc-select');
-    fd.append('Mandataire - Identité', sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '—');
-  } else {
-    fd.append('Mandataire - Nom', v('man-nom'));
-    fd.append('Mandataire - Prénom', v('man-prenom'));
-    fd.append('Mandataire - Date naissance', v('man-naiss'));
-    fd.append('Mandataire - Adresse', v('man-adresse') + ' ' + v('man-cp') + ' ' + v('man-ville'));
-    fd.append('Mandataire - Téléphone', v('man-tel'));
-    fd.append('Mandataire - Email', v('man-email'));
-    fd.append('Mandataire - N° SS', v('man-ss'));
-    fd.append('Mandataire - Situation familiale', rv('man-sit'));
-    fd.append('Mandataire - Situation professionnelle', rv('man-prof'));
+  // Mandataires
+  var nbManVal = parseInt(document.getElementById('nb-man') ? document.getElementById('nb-man').value : '1') || 1;
+  for (var mi = 0; mi < nbManVal; mi++) {
+    var mp = 'man' + mi;
+    var mQ = document.getElementById(mp + '-qualite') ? document.getElementById(mp + '-qualite').value : 'associe';
+    var mFonEl = document.getElementById(mp + '-fonction');
+    var mFonction = mFonEl && mFonEl.options[mFonEl.selectedIndex] ? mFonEl.options[mFonEl.selectedIndex].text : '';
+    fd.append('Mandataire ' + (mi+1) + ' - Qualité', mQ === 'associe' ? 'Associé' : 'Non Associé');
+    fd.append('Mandataire ' + (mi+1) + ' - Fonction', mFonction);
+    if (mQ === 'associe') {
+      var mSel = document.getElementById(mp + '-assoc-select');
+      fd.append('Mandataire ' + (mi+1) + ' - Identité', mSel && mSel.options[mSel.selectedIndex] ? mSel.options[mSel.selectedIndex].text : '');
+    } else {
+      fd.append('Mandataire ' + (mi+1) + ' - Nom', v(mp + '-nom'));
+      fd.append('Mandataire ' + (mi+1) + ' - Prénom', v(mp + '-prenom'));
+      fd.append('Mandataire ' + (mi+1) + ' - Date naissance', v(mp + '-naiss'));
+      fd.append('Mandataire ' + (mi+1) + ' - Adresse', v(mp + '-adresse') + ' ' + v(mp + '-cp') + ' ' + v(mp + '-ville'));
+      fd.append('Mandataire ' + (mi+1) + ' - Téléphone', v(mp + '-tel'));
+      fd.append('Mandataire ' + (mi+1) + ' - Email', v(mp + '-email'));
+      fd.append('Mandataire ' + (mi+1) + ' - N° SS', v(mp + '-ss'));
+      fd.append('Mandataire ' + (mi+1) + ' - Situation familiale', rv(mp + '-sit'));
+      fd.append('Mandataire ' + (mi+1) + ' - Situation professionnelle', rv(mp + '-prof'));
+    }
   }
-
   fd.append('_subject', 'Constitution de société - ' + v('denomination') + ' (' + v('forme') + ')');
-  fd.append('_replyto', v('man-email') !== '—' ? v('man-email') : (v('a0-email') !== '—' ? v('a0-email') : ''));
+  fd.append('_replyto', (function(){
+    var el0 = document.getElementById('man0-email'); if (el0 && el0.value) return el0.value;
+    var el1 = document.getElementById('a0-email'); if (el1 && el1.value) return el1.value;
+    return '';
+  })());
 
   // Fichiers
   var fileInputs = [
