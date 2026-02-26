@@ -693,8 +693,11 @@ function goTo(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+var isSAS = true;
+
 function onFormeChange() {
   var f = document.getElementById('forme').value;
+  isSAS = (f === 'SAS');
   var sub = document.getElementById('man-subtitle');
   if (sub) sub.textContent = isSAS ? 'Président de la SAS' : 'Gérant de la SARL';
 }
@@ -1017,7 +1020,7 @@ function validerFormulaire() {
   .catch(function() {
     btn.disabled = false;
     btn.textContent = '✉ Valider & Envoyer';
-    alert('Erreur lors de l'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
+    alert('Erreur lors de l\'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
   });
 }
 </script>
