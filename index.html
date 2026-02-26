@@ -347,7 +347,7 @@
       <div class="grid g2">
         <div class="field">
           <label>Capital social <span class="note">(pas de minimum légal)</span></label>
-          <input type="number" id="capital" placeholder="Ex : 1 000" min="1">
+          <input type="number" id="capital" placeholder="Ex : 1 000" min="1" oninput="validateCapital(this)">
         </div>
         <div class="field">
           <label>Mois de clôture de l'exercice</label>
@@ -393,7 +393,7 @@
         <div class="grid g3">
           <div class="field autocomplete-wrap">
             <label>Code postal</label>
-            <input type="text" id="cp" placeholder="75000"  autocomplete="off">
+            <input type="text" id="cp" placeholder="75000" autocomplete="off" oninput="validateCP(this)" maxlength="5">
           </div>
           <div class="field">
             <label>Ville</label>
@@ -741,18 +741,18 @@ function makeAssocBlock(idx) {
   html += '<div class="field"><label>Pr\u00e9nom <span class="req">*</span></label><input type="text" id="' + p + '-prenom" oninput="refreshMandataireList()"></div>';
   html += '<div class="field"><label>Nom de jeune fille</label><input type="text" id="' + p + '-njf"></div>';
   html += '<div class="field"><label>Nationalit\u00e9</label><input type="text" id="' + p + '-nat" value="Fran\u00e7aise"></div>';
-  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss"></div>';
+  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss" onchange="validateDateNaiss(this)"></div>';
   html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="' + p + '-lieu"></div>';
   html += '<div class="field gc2"><label>Adresse</label><input type="text" id="' + p + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off"></div>';
-  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off"></div>';
+  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off" maxlength="5" oninput="validateCP(this)"></div>';
   html += '<div class="field"><label>Ville</label><input type="text" id="' + p + '-ville" placeholder="Paris"></div>';
-  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel"></div>';
-  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email"></div>';
+  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel" placeholder="06 01 02 03 04" maxlength="14" oninput="formatTel(this)"></div>';
+  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email" placeholder="nom@exemple.fr" oninput="validateEmail(this)"></div>';
   html += '<div class="field"><label>N\u00b0 S\u00e9curit\u00e9 Sociale</label>';
   html += '<input type="text" id="' + p + '-ss" placeholder="1 00 00 00 000 000 00" oninput="onSSChange(this.id)">';
   html += '<div class="ss-feedback" id="' + p + '-ss-err" style="display:none;font-size:11px;margin-top:3px;padding:4px 8px;border-radius:3px;"></div>';
   html += '</div>';
-  html += '<div class="field"><label>D\u00e9tention du capital (%)</label><input type="number" id="' + p + '-pct" min="0" max="100" placeholder="Ex : 50" onchange="checkCapitalTotal()"></div>';
+  html += '<div class="field"><label>D\u00e9tention du capital (%)</label><input type="number" id="' + p + '-pct" min="0" max="100" step="0.01" placeholder="Ex : 50" oninput="validatePct(this);checkCapitalTotal()"></div>';
   html += '</div>';
   html += '<hr class="divider">';
   html += '<div class="sub"><div class="sub-title">Situation familiale</div><div class="grid g2">';
@@ -857,17 +857,17 @@ function makeManBlock(idx, nbAssoc) {
   html += '<div class="grid g2">';
   html += '<div class="field"><label>Nom</label><input type="text" id="' + p + '-nom"></div>';
   html += '<div class="field"><label>Pr\u00e9nom</label><input type="text" id="' + p + '-prenom"></div>';
-  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss"></div>';
+  html += '<div class="field"><label>Date de naissance</label><input type="date" id="' + p + '-naiss" onchange="validateDateNaiss(this)"></div>';
   html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="' + p + '-lieu-naiss"></div>';
   html += '<div class="field"><label>Nationalit\u00e9</label><input type="text" id="' + p + '-nat" value="Fran\u00e7aise"></div>';
   html += '<div class="field"><label>N\u00b0 S\u00e9curit\u00e9 Sociale</label>';
   html += '<input type="text" id="' + p + '-ss" placeholder="1 00 00 00 000 000 00" oninput="onSSChange(this.id)">';
   html += '</div>';
   html += '<div class="field gc2"><label>Adresse</label><input type="text" id="' + p + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off"></div>';
-  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off"></div>';
+  html += '<div class="field"><label>Code postal</label><input type="text" id="' + p + '-cp" placeholder="75000" autocomplete="off" maxlength="5" oninput="validateCP(this)"></div>';
   html += '<div class="field"><label>Ville</label><input type="text" id="' + p + '-ville" placeholder="Paris"></div>';
-  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel"></div>';
-  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email"></div>';
+  html += '<div class="field"><label>N\u00b0 t\u00e9l\u00e9phone</label><input type="tel" id="' + p + '-tel" placeholder="06 01 02 03 04" maxlength="14" oninput="formatTel(this)"></div>';
+  html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="' + p + '-email" placeholder="nom@exemple.fr" oninput="validateEmail(this)"></div>';
   html += '</div>';
   // Situation familiale
   html += '<div class="sub"><div class="sub-title">Situation familiale</div><div class="grid g2">';
@@ -1016,6 +1016,79 @@ function refreshMandataireList() { updateManBlocks(); }
 
 
 // ── Validation clôture ────────────────────────────────────────
+
+// ── Formatage et validation des champs ───────────────────────────────────────
+
+function formatTel(el) {
+  var val = el.value.replace(/\D/g, '').substring(0, 10);
+  var fmt = val.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+  el.value = fmt;
+  var ok = val.length === 10 && /^0[1-9]/.test(val);
+  showFieldFeedback(el, val.length === 0 ? null : ok, ok ? null : 'Numéro invalide (10 chiffres, commence par 0)');
+}
+
+function validateCP(el) {
+  var val = el.value.replace(/\D/g, '').substring(0, 5);
+  el.value = val;
+  var ok = val.length === 5;
+  showFieldFeedback(el, val.length === 0 ? null : ok, ok ? null : '5 chiffres requis');
+}
+
+function validateEmail(el) {
+  var val = el.value.trim();
+  var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  showFieldFeedback(el, val.length === 0 ? null : ok, ok ? null : 'Format invalide (ex\u00a0: nom@domaine.fr)');
+}
+
+function validateCapital(el) {
+  var val = parseFloat(el.value);
+  var ok = !isNaN(val) && val >= 1 && Number.isInteger(val);
+  showFieldFeedback(el, el.value === '' ? null : ok, ok ? null : 'Montant entier positif requis');
+}
+
+function validatePct(el) {
+  var val = parseFloat(el.value);
+  var ok = !isNaN(val) && val > 0 && val <= 100;
+  showFieldFeedback(el, el.value === '' ? null : ok, ok ? null : 'Entre 0,01 et 100');
+}
+
+function validateDateNaiss(el) {
+  if (!el.value) { showFieldFeedback(el, null, null); return; }
+  var d = new Date(el.value);
+  var now = new Date();
+  var age = (now - d) / (1000 * 60 * 60 * 24 * 365.25);
+  var ok = d >= new Date('1900-01-01') && d < now;
+  showFieldFeedback(el, ok, ok ? null : 'Date invalide');
+}
+
+function showFieldFeedback(el, isOk, errMsg) {
+  if (!el) return;
+  var errId = el.id + '-fmt-err';
+  var errEl = document.getElementById(errId);
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.id = errId;
+    errEl.style.cssText = 'font-size:11px;margin-top:3px;padding:3px 8px;border-radius:3px;';
+    el.parentNode.appendChild(errEl);
+  }
+  if (isOk === null) {
+    el.style.borderColor = '';
+    el.style.background = '';
+    errEl.style.display = 'none';
+  } else if (isOk) {
+    el.style.borderColor = '#4caf50';
+    el.style.background = '#f1f8e9';
+    errEl.style.display = 'none';
+  } else {
+    el.style.borderColor = '#c0392b';
+    el.style.background = '#fdecea';
+    errEl.textContent = '\u26a0 ' + errMsg;
+    errEl.style.color = '#c0392b';
+    errEl.style.background = '#fdecea';
+    errEl.style.display = 'block';
+  }
+}
+
 function validateCloture1() {
   var clotureEl = document.getElementById('cloture');
   var dateEl    = document.getElementById('cloture1');
@@ -1642,20 +1715,27 @@ function validerFormulaire() {
     headers: { 'Accept': 'application/json' },
     body: fd
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
   .then(function(res) {
-    if (res.ok || res.next) {
+    if (res.ok || res.next || res.id) {
       document.getElementById('confirm-msg').style.display = 'block';
       document.getElementById('confirm-msg').scrollIntoView({ behavior: 'smooth' });
-      btn.textContent = '✓ Envoyé';
+      btn.textContent = '\u2713 Envoy\u00e9';
     } else {
-      throw new Error('Erreur serveur');
+      var errMsg = res.errors ? res.errors.map(function(e){return e.message;}).join(', ') : 'Erreur serveur';
+      throw new Error(errMsg);
     }
   })
-  .catch(function() {
+  .catch(function(err) {
     btn.disabled = false;
-    btn.textContent = '✉️ Valider & Envoyer';
-    alert('Erreur lors de l\'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
+    btn.textContent = '\u2709\uFE0F Valider & Envoyer';
+    var msg = (err && err.message && err.message.indexOf('HTTP') === 0)
+      ? 'Erreur de connexion (' + err.message + '). V\u00e9rifiez votre connexion internet et r\u00e9essayez depuis https://fiducys.github.io'
+      : 'Erreur lors de l\'envoi\u00a0: ' + (err ? err.message : '') + '\nVeuillez r\u00e9essayer ou contacter Fiducys au 01\u00a045\u00a063\u00a044\u00a010.';
+    alert(msg);
   });
 }
 </script>
