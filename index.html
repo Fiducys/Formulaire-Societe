@@ -806,8 +806,8 @@ function onManQualiteChange(idx, nbAssoc) {
 function checkPresidentUnique() {
   // Only relevant for SAS
   var forme = document.getElementById('forme') ? document.getElementById('forme').value : 'SAS';
-  if (forme !== 'SAS') { 
-    var errEl = document.getElementById('man-president-error');
+  var errEl = document.getElementById('man-president-error');
+  if (forme !== 'SAS') {
     if (errEl) errEl.style.display = 'none';
     return true;
   }
@@ -817,10 +817,15 @@ function checkPresidentUnique() {
     var fonEl = document.getElementById('man' + i + '-fonction');
     if (fonEl && fonEl.value === 'president') nbPresidents++;
   }
-  var errEl = document.getElementById('man-president-error');
-  if (nbPresidents > 1) {
+  if (nbPresidents === 0) {
     if (errEl) {
-      errEl.innerHTML = '⚠ Une SAS ne peut avoir qu’un seul Président(e). Vous en avez renseigné <strong>' + nbPresidents + '</strong>. Veuillez corriger les fonctions.';
+      errEl.innerHTML = '⚠ Une SAS doit obligatoirement avoir un <strong>Président(e)</strong>. Veuillez attribuer cette fonction à l’un des mandataires.';
+      errEl.style.display = 'block';
+    }
+    return false;
+  } else if (nbPresidents > 1) {
+    if (errEl) {
+      errEl.innerHTML = '⚠ Une SAS ne peut avoir qu’un seul <strong>Président(e)</strong>. Vous en avez renseigné <strong>' + nbPresidents + '</strong>. Veuillez corriger les fonctions.';
       errEl.style.display = 'block';
     }
     return false;
