@@ -236,6 +236,24 @@
 
   .conf-footer { background: var(--blue-light); padding: 12px 48px; text-align: center; font-size: 10.5px; color: var(--muted); border-top: 1px solid var(--border); font-style: italic; }
 
+  /* Upload pieces */
+  .piece-upload { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 18px; }
+  .piece-label { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
+  .piece-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .piece-hint { font-size: 11.5px; color: var(--muted); margin-top: 3px; font-weight: 400; }
+  .upload-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blue-light); border: 1.5px dashed var(--blue);
+    border-radius: 4px; padding: 9px 18px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--blue);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .upload-btn:hover { background: #d4e6f8; border-color: var(--blue-dark); }
+  .upload-btn::before { content: "\2B06"; margin-right: 4px; }
+  .upload-btn input[type=file] { display: none; }
+  .file-names { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.8; }
+  .file-names span { display: inline-flex; align-items: center; gap: 5px; background: #e8f5e9; color: #2e7d32; border-radius: 12px; padding: 2px 10px; margin: 2px 4px 2px 0; font-size: 11.5px; }
+
   @media print {
     body { background: white; padding: 0; }
     .page { box-shadow: none; }
@@ -345,19 +363,17 @@
         <div class="grid g1" style="margin-bottom:12px;">
           <div class="field autocomplete-wrap">
             <label>Adresse <span class="req">*</span></label>
-            <input type="text" id="adresse" placeholder="Tapez une adresse..." autocomplete="off" oninput="adresseSearch('adresse','cp','ville','adresse-list')">
-            <ul class="autocomplete-list" id="adresse-list" style="display:none"></ul>
+            <input type="text" id="adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off" >
           </div>
         </div>
         <div class="grid g3">
           <div class="field autocomplete-wrap">
             <label>Code postal <span class="req">*</span></label>
-            <input type="text" id="cp" placeholder="75000" oninput="cpSearch('cp','ville','cp-list')" autocomplete="off">
-            <ul class="autocomplete-list" id="cp-list" style="display:none"></ul>
+            <input type="text" id="cp" placeholder="75000"  autocomplete="off">
           </div>
           <div class="field">
             <label>Ville <span class="req">*</span></label>
-            <input type="text" id="ville" placeholder="Paris" readonly style="background:#f5f5f5;">
+            <input type="text" id="ville" placeholder="Paris">
           </div>
           <div class="field">
             <label>Pays</label>
@@ -467,17 +483,15 @@
           </div>
           <div class="field gc2 autocomplete-wrap">
             <label>Adresse</label>
-            <input type="text" id="man-adresse" placeholder="Tapez une adresse..." autocomplete="off" oninput="adresseSearch('man-adresse','man-cp','man-ville','man-adresse-list')">
-            <ul class="autocomplete-list" id="man-adresse-list" style="display:none"></ul>
+            <input type="text" id="man-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off" >
           </div>
           <div class="field autocomplete-wrap">
             <label>Code postal</label>
-            <input type="text" id="man-cp" placeholder="75000" oninput="cpSearch('man-cp','man-ville','man-cp-list')" autocomplete="off">
-            <ul class="autocomplete-list" id="man-cp-list" style="display:none"></ul>
+            <input type="text" id="man-cp" placeholder="75000"  autocomplete="off">
           </div>
           <div class="field">
             <label>Ville</label>
-            <input type="text" id="man-ville" placeholder="Paris" readonly style="background:#f5f5f5;">
+            <input type="text" id="man-ville" placeholder="Paris">
           </div>
           <div class="field">
             <label>N° téléphone</label>
@@ -566,21 +580,61 @@
       </div>
 
       <ul class="piece-list">
-        <li class="piece-item">
-          <input type="checkbox" id="p1">
-          <label for="p1">Copie recto-verso de la carte d'identité ou du passeport de <strong>tous les associés</strong></label>
+        <li class="piece-item piece-upload">
+          <div class="piece-label">
+            <span class="piece-icon">&#128196;</span>
+            <div>
+              <strong>Copies CI / passeport</strong> &#8212; tous les associ&#233;s
+              <div class="piece-hint">Recto-verso &#8212; plusieurs fichiers possibles</div>
+            </div>
+          </div>
+          <label class="upload-btn" for="file-p1">
+            <span id="p1-text">Choisir les fichiers</span>
+            <input type="file" id="file-p1" name="CI_passeport_associes" multiple accept="image/*,.pdf" onchange="updateFileLabel('p1')">
+          </label>
+          <div class="file-names" id="p1-names"></div>
         </li>
-        <li class="piece-item">
-          <input type="checkbox" id="p2">
-          <label for="p2">Copie de l'attestation Vitale (sécurité sociale) du <strong>Mandataire social</strong></label>
+        <li class="piece-item piece-upload">
+          <div class="piece-label">
+            <span class="piece-icon">&#127973;</span>
+            <div>
+              <strong>Attestation Vitale</strong> &#8212; Mandataire social
+              <div class="piece-hint">Carte Vitale ou attestation s&#233;curit&#233; sociale</div>
+            </div>
+          </div>
+          <label class="upload-btn" for="file-p2">
+            <span id="p2-text">Choisir le fichier</span>
+            <input type="file" id="file-p2" name="attestation_vitale" multiple accept="image/*,.pdf" onchange="updateFileLabel('p2')">
+          </label>
+          <div class="file-names" id="p2-names"></div>
         </li>
-        <li class="piece-item">
-          <input type="checkbox" id="p3">
-          <label for="p3">Justificatif de domicile du <strong>Mandataire social</strong> si domiciliation de la société à son adresse (EDF ou quittance de loyer)</label>
+        <li class="piece-item piece-upload">
+          <div class="piece-label">
+            <span class="piece-icon">&#127968;</span>
+            <div>
+              <strong>Justificatif de domicile</strong> &#8212; Mandataire social
+              <div class="piece-hint">EDF ou quittance de loyer (si domiciliation &#224; l'adresse personnelle)</div>
+            </div>
+          </div>
+          <label class="upload-btn" for="file-p3">
+            <span id="p3-text">Choisir le fichier</span>
+            <input type="file" id="file-p3" name="justificatif_domicile" multiple accept="image/*,.pdf" onchange="updateFileLabel('p3')">
+          </label>
+          <div class="file-names" id="p3-names"></div>
         </li>
-        <li class="piece-item">
-          <input type="checkbox" id="p4">
-          <label for="p4">Copie du contrat de domiciliation <em style="color:var(--muted);font-size:12px;">(si domiciliation en dehors du cabinet)</em></label>
+        <li class="piece-item piece-upload">
+          <div class="piece-label">
+            <span class="piece-icon">&#128203;</span>
+            <div>
+              <strong>Contrat de domiciliation</strong>
+              <div class="piece-hint">Si domiciliation en dehors du cabinet</div>
+            </div>
+          </div>
+          <label class="upload-btn" for="file-p4">
+            <span id="p4-text">Choisir le fichier</span>
+            <input type="file" id="file-p4" name="contrat_domiciliation" multiple accept="image/*,.pdf" onchange="updateFileLabel('p4')">
+          </label>
+          <div class="file-names" id="p4-names"></div>
         </li>
       </ul>
 
@@ -670,12 +724,12 @@ function makeAssocBlock(idx) {
   html += '<div class="field"><label>Date de naissance</label><input type="date" id="a' + idx + '-naiss"></div>';
   html += '<div class="field"><label>Lieu de naissance</label><input type="text" id="a' + idx + '-lieu"></div>';
   html += '<div class="field gc2 autocomplete-wrap"><label>Adresse</label>';
-  html += '<input type="text" id="a' + idx + '-adresse" placeholder="Tapez une adresse..." autocomplete="off" oninput="adresseSearch(\'a' + idx + '-adresse\',\'a' + idx + '-cp\',\'a' + idx + '-ville\',\'a' + idx + '-adresse-list\')">';
-  html += '<ul class="autocomplete-list" id="a' + idx + '-adresse-list" style="display:none"></ul></div>';
+  html += '<input type="text" id="a' + idx + '-adresse" placeholder="Ex : 10 rue de la Paix" autocomplete="off">';
+  html += '</div>';
   html += '<div class="field autocomplete-wrap"><label>Code postal</label>';
-  html += '<input type="text" id="a' + idx + '-cp" placeholder="75000" autocomplete="off" oninput="cpSearch(\'a' + idx + '-cp\',\'a' + idx + '-ville\',\'a' + idx + '-cp-list\')">';
-  html += '<ul class="autocomplete-list" id="a' + idx + '-cp-list" style="display:none"></ul></div>';
-  html += '<div class="field"><label>Ville</label><input type="text" id="a' + idx + '-ville" readonly style="background:#f5f5f5;"></div>';
+  html += '<input type="text" id="a' + idx + '-cp" placeholder="75000" autocomplete="off">';
+  
+  html += '<div class="field"><label>Ville</label><input type="text" id="a' + idx + '-ville" placeholder="Paris"></div>';
   html += '<div class="field"><label>N° téléphone</label><input type="tel" id="a' + idx + '-tel"></div>';
   html += '<div class="field"><label>Adresse e-mail</label><input type="email" id="a' + idx + '-email"></div>';
   html += '<div class="field"><label>N° Sécurité Sociale</label><input type="text" id="a' + idx + '-ss" placeholder="1 00 00 00 000 000 00"></div>';
@@ -759,78 +813,6 @@ function onMandataireQualite() {
 }
 onMandataireQualite();
 
-// ── Autocomplete ────────────────────────────────────────────────
-var acTimers = {};
-
-function adresseSearch(inputId, cpId, villeId, listId) {
-  clearTimeout(acTimers[inputId]);
-  var q = document.getElementById(inputId).value;
-  var list = document.getElementById(listId);
-  if (q.length < 3) { list.style.display = 'none'; return; }
-  acTimers[inputId] = setTimeout(function(){
-    list.innerHTML = '<li class="ac-loading">Recherche...</li>';
-    list.style.display = 'block';
-    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(q) + '&limit=6')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (!d.features || !d.features.length) { list.innerHTML = '<li class="ac-loading">Aucun résultat</li>'; return; }
-        list.innerHTML = '';
-        d.features.forEach(function(f, i){
-          var li = document.createElement('li');
-          li.innerHTML = f.properties.name + ' <span>' + f.properties.postcode + ' ' + f.properties.city + '</span>';
-          if (i === 0) li.classList.add('active');
-          li.onclick = function(){
-            document.getElementById(inputId).value = f.properties.name;
-            document.getElementById(cpId).value = f.properties.postcode;
-            var vEl = document.getElementById(villeId);
-            vEl.value = f.properties.city;
-            vEl.removeAttribute('readonly');
-            list.style.display = 'none';
-          };
-          list.appendChild(li);
-        });
-      })
-      .catch(function(){ list.innerHTML = '<li class="ac-loading">Erreur réseau</li>'; });
-  }, 350);
-}
-
-function cpSearch(cpId, villeId, listId) {
-  clearTimeout(acTimers[cpId]);
-  var q = document.getElementById(cpId).value;
-  var list = document.getElementById(listId);
-  if (q.length < 2) { list.style.display = 'none'; return; }
-  acTimers[cpId] = setTimeout(function(){
-    list.innerHTML = '<li class="ac-loading">Recherche...</li>';
-    list.style.display = 'block';
-    fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(q) + '&type=municipality&limit=8')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (!d.features || !d.features.length) { list.innerHTML = '<li class="ac-loading">Aucun résultat</li>'; return; }
-        var seen = {};
-        list.innerHTML = '';
-        d.features.forEach(function(f){
-          var key = f.properties.postcode + '|' + f.properties.city;
-          if (seen[key]) return; seen[key] = true;
-          var li = document.createElement('li');
-          li.innerHTML = '<strong>' + f.properties.postcode + '</strong> — ' + f.properties.city;
-          li.onclick = function(){
-            document.getElementById(cpId).value = f.properties.postcode;
-            document.getElementById(villeId).value = f.properties.city;
-            list.style.display = 'none';
-          };
-          list.appendChild(li);
-        });
-      })
-      .catch(function(){ list.innerHTML = '<li class="ac-loading">Erreur réseau</li>'; });
-  }, 350);
-}
-
-document.addEventListener('click', function(e){
-  document.querySelectorAll('.autocomplete-list').forEach(function(l){
-    if (!l.contains(e.target)) l.style.display = 'none';
-  });
-});
-
 // ── Récapitulatif ───────────────────────────────────────────────
 function v(id) {
   var e = document.getElementById(id);
@@ -889,17 +871,12 @@ function buildSummary() {
     }
 
     var forme = document.getElementById('forme').value;
-      var pieces = [];
-    var pLabels = [
-      "Copie CI / passeport de tous les associés",
-      "Attestation Vitale du Mandataire social",
-      "Justificatif de domicile du Mandataire social",
-      "Copie du contrat de domiciliation"
+      var filesPieces = [
+      {id:'file-p1', label:'CI / passeport associés'},
+      {id:'file-p2', label:'Attestation Vitale'},
+      {id:'file-p3', label:'Justificatif de domicile'},
+      {id:'file-p4', label:'Contrat de domiciliation'}
     ];
-    ['p1','p2','p3','p4'].forEach(function(id, i){
-      var el = document.getElementById(id);
-      if (el && el.checked) pieces.push(pLabels[i]);
-    });
 
     var html = '<table class="summary-table">';
     html += sec('La Société');
@@ -915,12 +892,14 @@ function buildSummary() {
     html += assocHtml;
     html += sec('Mandataire Social');
     html += manInfo;
-      html += sec('Pièces à joindre');
-    if (pieces.length > 0) {
-      pieces.forEach(function(p){ html += '<tr><td colspan="2">✓ ' + p + '</td></tr>'; });
-    } else {
-      html += '<tr><td colspan="2" style="color:#888;font-style:italic;">Aucune pièce cochée</td></tr>';
-    }
+      html += sec('Pièces jointes');
+    filesPieces.forEach(function(fp){
+      var el = document.getElementById(fp.id);
+      var count = el && el.files ? el.files.length : 0;
+      var names = [];
+      if (el && el.files) { for (var fi=0;fi<el.files.length;fi++) names.push(el.files[fi].name); }
+      html += row(fp.label, count > 0 ? '✓ ' + count + ' fichier' + (count>1?'s':'') + ' : ' + names.join(', ') : '<em style="color:#aaa">Aucun fichier</em>');
+    });
     html += '</table>';
 
     document.getElementById('summary-content').innerHTML = html;
@@ -931,78 +910,102 @@ function buildSummary() {
 }
 
 
+function updateFileLabel(pid) {
+  var input = document.getElementById('file-' + pid);
+  var namesDiv = document.getElementById(pid + '-names');
+  var textSpan = document.getElementById(pid + '-text');
+  if (!input.files || !input.files.length) return;
+  var count = input.files.length;
+  textSpan.textContent = count + ' fichier' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 's' : '');
+  namesDiv.innerHTML = '';
+  for (var i = 0; i < input.files.length; i++) {
+    var sp = document.createElement('span');
+    sp.textContent = '✓ ' + input.files[i].name;
+    namesDiv.appendChild(sp);
+  }
+}
+
 function validerFormulaire() {
   var endpoint = 'https://formspree.io/f/mvzblqvl';
   var btn = document.querySelector('.btn-valider');
   btn.disabled = true;
   btn.textContent = 'Envoi en cours…';
 
-  var data = {};
+  var fd = new FormData();
 
-  // Societe
-  data['Denomination'] = v('denomination');
-  data['Sigle'] = v('sigle');
-  data['Forme juridique'] = v('forme');
-  data['Objet social'] = v('objet');
-  data['Capital social'] = v('capital') !== '—' ? v('capital') + ' €' : '—';
-  data['Cloture exercice'] = v('cloture');
-  data['Siege social'] = v('adresse') + ' ' + v('cp') + ' ' + v('ville');
+  // Société
+  fd.append('Dénomination', v('denomination'));
+  fd.append('Sigle', v('sigle'));
+  fd.append('Forme juridique', v('forme'));
+  fd.append('Objet social', v('objet'));
+  fd.append('Capital social', v('capital') !== '—' ? v('capital') + ' €' : '—');
+  fd.append('Clôture exercice', v('cloture'));
+  fd.append('Siège social', v('adresse') + ' ' + v('cp') + ' ' + v('ville'));
 
-  // Associes
+  // Associés
   var nb = parseInt(document.getElementById('nb-assoc').value) || 2;
   for (var i = 0; i < nb; i++) {
-    var p = 'Associe ' + (i + 1) + ' - ';
-    data[p + 'Nom'] = v('a' + i + '-nom');
-    data[p + 'Prenom'] = v('a' + i + '-prenom');
-    data[p + 'Nom jeune fille'] = v('a' + i + '-njf');
-    data[p + 'Nationalite'] = v('a' + i + '-nat');
-    data[p + 'Date naissance'] = v('a' + i + '-naiss');
-    data[p + 'Lieu naissance'] = v('a' + i + '-lieu');
-    data[p + 'Adresse'] = v('a' + i + '-adresse') + ' ' + v('a' + i + '-cp') + ' ' + v('a' + i + '-ville');
-    data[p + 'Telephone'] = v('a' + i + '-tel');
-    data[p + 'Email'] = v('a' + i + '-email');
-    data[p + 'N SS'] = v('a' + i + '-ss');
-    data[p + 'Capital detenu'] = v('a' + i + '-pct') !== '—' ? v('a' + i + '-pct') + ' %' : '—';
-    data[p + 'Situation familiale'] = rv('a' + i + '-sit');
-    data[p + 'Regime matrimonial'] = v('a' + i + '-regime');
-    data[p + 'Situation professionnelle'] = rv('a' + i + '-prof');
+    var p = 'Associé ' + (i + 1) + ' - ';
+    fd.append(p + 'Nom', v('a' + i + '-nom'));
+    fd.append(p + 'Prénom', v('a' + i + '-prenom'));
+    fd.append(p + 'Nom jeune fille', v('a' + i + '-njf'));
+    fd.append(p + 'Nationalité', v('a' + i + '-nat'));
+    fd.append(p + 'Date naissance', v('a' + i + '-naiss'));
+    fd.append(p + 'Lieu naissance', v('a' + i + '-lieu'));
+    fd.append(p + 'Adresse', v('a' + i + '-adresse') + ' ' + v('a' + i + '-cp') + ' ' + v('a' + i + '-ville'));
+    fd.append(p + 'Téléphone', v('a' + i + '-tel'));
+    fd.append(p + 'Email', v('a' + i + '-email'));
+    fd.append(p + 'N° SS', v('a' + i + '-ss'));
+    fd.append(p + 'Capital détenu', v('a' + i + '-pct') !== '—' ? v('a' + i + '-pct') + ' %' : '—');
+    fd.append(p + 'Situation familiale', rv('a' + i + '-sit'));
+    fd.append(p + 'Régime matrimonial', v('a' + i + '-regime'));
+    fd.append(p + 'Situation professionnelle', rv('a' + i + '-prof'));
   }
 
   // Mandataire
   var manQ = document.getElementById('man-qualite').value;
-  data['Mandataire - Qualite'] = manQ === 'associe' ? 'Associe' : 'Non Associe';
+  fd.append('Mandataire - Qualité', manQ === 'associe' ? 'Associé' : 'Non Associé');
   if (manQ === 'associe') {
     var sel = document.getElementById('man-assoc-select');
-    data['Mandataire - Identite'] = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '—';
+    fd.append('Mandataire - Identité', sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '—');
   } else {
-    data['Mandataire - Nom'] = v('man-nom');
-    data['Mandataire - Prenom'] = v('man-prenom');
-    data['Mandataire - Date naissance'] = v('man-naiss');
-    data['Mandataire - Adresse'] = v('man-adresse') + ' ' + v('man-cp') + ' ' + v('man-ville');
-    data['Mandataire - Telephone'] = v('man-tel');
-    data['Mandataire - Email'] = v('man-email');
-    data['Mandataire - N SS'] = v('man-ss');
-    data['Mandataire - Situation familiale'] = rv('man-sit');
-    data['Mandataire - Situation professionnelle'] = rv('man-prof');
+    fd.append('Mandataire - Nom', v('man-nom'));
+    fd.append('Mandataire - Prénom', v('man-prenom'));
+    fd.append('Mandataire - Date naissance', v('man-naiss'));
+    fd.append('Mandataire - Adresse', v('man-adresse') + ' ' + v('man-cp') + ' ' + v('man-ville'));
+    fd.append('Mandataire - Téléphone', v('man-tel'));
+    fd.append('Mandataire - Email', v('man-email'));
+    fd.append('Mandataire - N° SS', v('man-ss'));
+    fd.append('Mandataire - Situation familiale', rv('man-sit'));
+    fd.append('Mandataire - Situation professionnelle', rv('man-prof'));
   }
 
-  // Pieces
-  var pLabels = ['CI passeport tous associes','Attestation Vitale Mandataire','Justificatif domicile Mandataire','Contrat domiciliation'];
-  ['p1','p2','p3','p4'].forEach(function(id, i){
-    var el = document.getElementById(id);
-    data['Piece - ' + pLabels[i]] = (el && el.checked) ? 'Oui' : 'Non';
-  });
+  fd.append('_subject', 'Constitution de société - ' + v('denomination') + ' (' + v('forme') + ')');
+  fd.append('_replyto', v('man-email') !== '—' ? v('man-email') : (v('a0-email') !== '—' ? v('a0-email') : ''));
 
-  data['_subject'] = 'Constitution de societe - ' + v('denomination') + ' (' + v('forme') + ')';
-  data['_replyto'] = v('man-email') !== '—' ? v('man-email') : (v('a0-email') !== '—' ? v('a0-email') : '');
+  // Fichiers
+  var fileInputs = [
+    { id: 'file-p1', label: 'CI_passeport_associes' },
+    { id: 'file-p2', label: 'attestation_vitale' },
+    { id: 'file-p3', label: 'justificatif_domicile' },
+    { id: 'file-p4', label: 'contrat_domiciliation' }
+  ];
+  fileInputs.forEach(function(f) {
+    var input = document.getElementById(f.id);
+    if (input && input.files) {
+      for (var i = 0; i < input.files.length; i++) {
+        fd.append(f.label, input.files[i]);
+      }
+    }
+  });
 
   fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(data)
+    headers: { 'Accept': 'application/json' },
+    body: fd
   })
-  .then(function(r){ return r.json(); })
-  .then(function(res){
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
     if (res.ok || res.next) {
       document.getElementById('confirm-msg').style.display = 'block';
       document.getElementById('confirm-msg').scrollIntoView({ behavior: 'smooth' });
@@ -1011,10 +1014,10 @@ function validerFormulaire() {
       throw new Error('Erreur serveur');
     }
   })
-  .catch(function(){
+  .catch(function() {
     btn.disabled = false;
     btn.textContent = '✉ Valider & Envoyer';
-    alert('Erreur lors de l\'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
+    alert('Erreur lors de l'envoi. Veuillez réessayer ou contacter Fiducys au 01 45 63 44 10.');
   });
 }
 </script>
