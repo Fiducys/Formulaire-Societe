@@ -277,6 +277,7 @@
     .conf-footer { padding: 12px 20px; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div class="page">
@@ -1371,26 +1372,38 @@ function goToSocieteNext() {
 
   var fields = [
     {id:'denomination', label:'Dénomination sociale'},
-    {id:'forme', label:'Forme juridique'},
-    {id:'objet', label:'Objet social'},
-    {id:'capital', label:'Capital social'},
-    {id:'cloture', label:'Mois de clôture'},
-    {id:'cloture1', label:'Date de clôture du 1er exercice'},
-    {id:'regime-fiscal', label:'Régime fiscal'},
-    {id:'adresse', label:'Adresse du siège'},
-    {id:'cp', label:'Code postal'},
-    {id:'ville', label:'Ville'}
+    {id:'forme',        label:'Forme juridique'},
+    {id:'objet',        label:'Objet social'},
+    {id:'capital',      label:'Capital social'},
+    {id:'cloture',      label:'Mois de clôture'},
+    {id:'cloture1',     label:'Date de clôture du 1er exercice'},
+    {id:'regime-fiscal',label:'Régime fiscal'}
   ];
 
   fields.forEach(function(f) {
     var el = document.getElementById(f.id);
     var empty = !el || !el.value || !el.value.trim();
     setFieldError(el, empty);
-    if (empty) {
-      errors.push(f.label);
-      if (!firstEl) firstEl = el;
-    }
+    if (empty) { errors.push(f.label); if (!firstEl) firstEl = el; }
   });
+
+  // Domiciliation
+  var domChk = document.querySelector('input[name="domiciliation"]:checked');
+  if (!domChk) {
+    errors.push('Type de domiciliation');
+  } else if (domChk.value === 'autre') {
+    ['adresse','cp','ville'].forEach(function(id) {
+      var el = document.getElementById(id);
+      var empty = !el || !el.value || !el.value.trim();
+      setFieldError(el, empty);
+      if (empty) { errors.push(id === 'adresse' ? 'Adresse' : id === 'cp' ? 'Code postal' : 'Ville'); if (!firstEl) firstEl = el; }
+    });
+  } else {
+    // gerant ou fiducys : effacer erreurs visuelles sur ces champs
+    ['adresse','cp','ville'].forEach(function(id) {
+      setFieldError(document.getElementById(id), false);
+    });
+  }
 
   if (!validateCloture1()) errors.push('Date de clôture invalide');
 
@@ -1664,6 +1677,144 @@ function validerAvecRGPD() {
   validerFormulaire();
 }
 
+function generateRecapPDF() {
+  var { jsPDF } = window.jspdf;
+  var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var pageW = 210, margin = 14, y = 0;
+  var colLabel = margin, colValue = margin + 75, maxValueW = 210 - (margin + 75) - margin;
+
+  function checkPage(needed) {
+    if (y + (needed || 8) > 282) { doc.addPage(); y = 14; }
+  }
+
+  function drawSection(title) {
+    checkPage(12);
+    y += 4;
+    doc.setFillColor(26, 43, 74);
+    doc.rect(margin, y, 210 - margin * 2, 7, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title.toUpperCase(), margin + 3, y + 5);
+    y += 10;
+    doc.setTextColor(40, 40, 40);
+  }
+
+  function drawRow(label, val) {
+    if (!val || val === '\u2014' || val.trim() === '') return;
+    var lines = doc.splitTextToSize(String(val), maxValueW);
+    var rowH = Math.max(7, lines.length * 5.5);
+    checkPage(rowH + 1);
+    // Zebra
+    if (Math.floor(y / 7) % 2 === 0) {
+      doc.setFillColor(248, 249, 251);
+      doc.rect(margin, y - 4.5, 210 - margin * 2, rowH, 'F');
+    }
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(80, 80, 80);
+    doc.text(label, colLabel, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 20);
+    doc.text(lines, colValue, y);
+    // separator line
+    doc.setDrawColor(225, 225, 225);
+    doc.line(margin, y + rowH - 4, 210 - margin, y + rowH - 4);
+    y += rowH;
+  }
+
+  // ── Header ──────────────────────────────────────────────────
+  doc.setFillColor(26, 43, 74);
+  doc.rect(0, 0, 210, 20, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Constitution de Soci\u00e9t\u00e9', margin, 12);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Fiche de Renseignements \u2014 Fiducys, 50 av. Victor Hugo 75116 Paris', margin, 17);
+  y = 28;
+
+  // ── Société ─────────────────────────────────────────────────
+  drawSection('Soci\u00e9t\u00e9');
+  drawRow('D\u00e9nomination', v('denomination'));
+  drawRow('Sigle', v('sigle'));
+  drawRow('Forme juridique', v('forme'));
+  drawRow('Objet social', v('objet'));
+  drawRow('Capital social', v('capital') ? v('capital') + ' \u20ac' : '\u2014');
+  drawRow('Cl\u00f4ture exercice', v('cloture'));
+  drawRow('1er exercice', v('cloture1'));
+  drawRow('R\u00e9gime fiscal', v('regime-fiscal'));
+  var domChk = document.querySelector('input[name="domiciliation"]:checked');
+  var domTxt = domChk ? (domChk.value === 'fiducys' ? 'Fiducys \u2013 50 av. Victor Hugo 75116 Paris' :
+               domChk.value === 'gerant' ? 'Domicile du g\u00e9rant / pr\u00e9sident' :
+               [v('adresse'), v('cp'), v('ville')].filter(Boolean).join(' ')) : '\u2014';
+  drawRow('Si\u00e8ge social', domTxt);
+
+  // ── Associés ─────────────────────────────────────────────────
+  var nb = parseInt((document.getElementById('nb-assoc')||{value:'1'}).value) || 1;
+  for (var i = 0; i < nb; i++) {
+    var p = 'a' + i;
+    drawSection('Associ\u00e9 ' + (i + 1));
+    drawRow('Nom', v(p+'-nom'));
+    drawRow('Pr\u00e9nom', v(p+'-prenom'));
+    drawRow('Nom de jeune fille', v(p+'-njf'));
+    drawRow('Date de naissance', v(p+'-naiss'));
+    drawRow('Lieu de naissance', v(p+'-lieu'));
+    drawRow('Nationalit\u00e9', v(p+'-nat'));
+    drawRow('Adresse', [v(p+'-adresse'), v(p+'-cp'), v(p+'-ville')].filter(Boolean).join(' '));
+    drawRow('T\u00e9l\u00e9phone', v(p+'-tel'));
+    drawRow('Email', v(p+'-email'));
+    drawRow('N\u00b0 SS', v(p+'-ss'));
+    drawRow('Capital d\u00e9tenu', v(p+'-pct') ? v(p+'-pct') + ' %' : '\u2014');
+    drawRow('Situation familiale', rv(p+'-sit'));
+    drawRow('R\u00e9gime matrimonial', v(p+'-regime'));
+    drawRow('Situation professionnelle', rv(p+'-prof'));
+    if (rv(p+'-prof') === 'liberal') drawRow('Profession lib\u00e9rale', v(p+'-prof-lib'));
+    if (rv(p+'-prof') === 'autre') drawRow('Autre situation', v(p+'-prof-autre'));
+  }
+
+  // ── Mandataires ───────────────────────────────────────────────
+  var nbMan = parseInt((document.getElementById('nb-man')||{value:'1'}).value) || 1;
+  for (var mi = 0; mi < nbMan; mi++) {
+    var mp = 'man' + mi;
+    drawSection('Mandataire Social ' + (mi + 1));
+    var qEl = document.getElementById(mp+'-qualite');
+    var q = qEl ? qEl.value : 'associe';
+    drawRow('Qualit\u00e9', q === 'associe' ? 'Associ\u00e9' : 'Non Associ\u00e9');
+    var fonEl = document.getElementById(mp+'-fonction');
+    drawRow('Fonction', fonEl && fonEl.selectedIndex >= 0 ? fonEl.options[fonEl.selectedIndex].text : '');
+    if (q === 'associe') {
+      var sel = document.getElementById(mp+'-assoc-select');
+      drawRow('Identit\u00e9', sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : '');
+    } else {
+      drawRow('Nom', v(mp+'-nom'));
+      drawRow('Pr\u00e9nom', v(mp+'-prenom'));
+      drawRow('Date de naissance', v(mp+'-naiss'));
+      drawRow('Adresse', [v(mp+'-adresse'), v(mp+'-cp'), v(mp+'-ville')].filter(Boolean).join(' '));
+      drawRow('T\u00e9l\u00e9phone', v(mp+'-tel'));
+      drawRow('Email', v(mp+'-email'));
+      drawRow('N\u00b0 SS', v(mp+'-ss'));
+      drawRow('Situation familiale', rv(mp+'-sit'));
+      drawRow('Situation professionnelle', rv(mp+'-prof'));
+    }
+    var acreChk = document.querySelector('input[name="'+mp+'-acre"]:checked');
+    if (acreChk) drawRow('Demande ACRE', acreChk.value === 'oui' ? 'Oui' : 'Non');
+  }
+
+  // ── Footer ────────────────────────────────────────────────────
+  var totalPages = doc.internal.getNumberOfPages();
+  for (var pg = 1; pg <= totalPages; pg++) {
+    doc.setPage(pg);
+    doc.setFontSize(7.5);
+    doc.setTextColor(160, 160, 160);
+    var today = new Date();
+    doc.text('Document confidentiel \u2014 Fiducys \u2014 ' + today.toLocaleDateString('fr-FR') + ' \u2014 Page ' + pg + '/' + totalPages, margin, 291);
+  }
+
+  return doc.output('blob');
+}
+
 function validerFormulaire() {
   var endpoint = 'https://formspree.io/f/mvzblqvl';
   var btn = document.querySelector('.btn-valider');
@@ -1757,6 +1908,15 @@ function validerFormulaire() {
       }
     }
   });
+
+  // Génération et attachement du récap PDF
+  try {
+    var pdfBlob = generateRecapPDF();
+    var denomination = v('denomination') || 'Societe';
+    fd.append('recap_pdf', pdfBlob, 'Recap_Constitution_' + denomination.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+  } catch(e) {
+    console.warn('PDF generation failed:', e);
+  }
 
   fetch(endpoint, {
     method: 'POST',
