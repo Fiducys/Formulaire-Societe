@@ -276,10 +276,75 @@
     .gc2,.gc3 { grid-column: span 1; }
     .conf-footer { padding: 12px 20px; }
   }
+
+  /* ── Login screen ── */
+  #login-screen {
+    position:fixed;inset:0;background:#f0f4fa;display:flex;align-items:center;
+    justify-content:center;z-index:9999;
+  }
+  .login-box {
+    background:white;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.15);
+    padding:40px 44px;width:100%;max-width:400px;
+  }
+  .login-logo { text-align:center;margin-bottom:24px; }
+  .login-logo img { height:52px;width:auto; }
+  .login-title { font-size:20px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:6px; }
+  .login-sub { font-size:13px;color:#777;text-align:center;margin-bottom:28px; }
+  .login-field { margin-bottom:16px; }
+  .login-field label { display:block;font-size:12px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.6px;color:var(--navy);margin-bottom:6px; }
+  .login-field input { width:100%;box-sizing:border-box;padding:10px 14px;border:1.5px solid var(--border);
+    border-radius:5px;font-size:14px;font-family:inherit;outline:none;transition:.15s; }
+  .login-field input:focus { border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,98,162,.1); }
+  .login-btn { width:100%;padding:12px;background:var(--blue-dark);color:white;border:none;
+    border-radius:5px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:.15s; }
+  .login-btn:hover { background:#0e2d50; }
+  .login-btn:disabled { opacity:.6;cursor:default; }
+  .login-error { background:#fdecea;border-left:3px solid #c0392b;color:#c0392b;
+    font-size:13px;padding:8px 12px;border-radius:3px;margin-top:12px;display:none; }
+  #save-bar { position:fixed;top:0;left:0;right:0;z-index:100;background:var(--navy);
+    color:white;display:flex;align-items:center;justify-content:space-between;
+    padding:8px 20px;font-size:13px;display:none; }
+  #save-bar .save-info { opacity:.8; }
+  #save-bar button { background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+    color:white;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;
+    font-weight:600;margin-left:10px; }
+  #save-bar button:hover { background:rgba(255,255,255,.25); }
+  body.logged-in { padding-top:36px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="http://fiducys.fr/wp-content/uploads/2021/03/Logo-Fiducys-Grand-1.jpg" alt="Fiducys"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="login-title">Accès sécurisé</div>
+    <div class="login-sub">Formulaire Constitution de Société</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="votre@email.fr" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-mdp" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Accéder au formulaire</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<div id="save-bar">
+  <span class="save-info" id="save-info">Connecté</span>
+  <div>
+    <button onclick="sauvegarderDossier(true)">💾 Sauvegarder</button>
+    <button onclick="seDeconnecter()" style="background:rgba(255,50,50,.3);">⏻ Déconnexion</button>
+  </div>
+</div>
+
 <div class="page">
 
   <!-- HEADER -->
@@ -1946,6 +2011,197 @@ function validerFormulaire() {
     alert(msg);
   });
 }
+// ── Configuration ─────────────────────────────────────────────
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyDnuF_FeM1m0JaUnxhI5lWz23J-1e3u7sKge2MHDJSK_cUcwbwl-22pNlYIPRsMS4S0w/exec';
+var SESSION = { email: '', nom: '', token: '' };
+
+// ── Login ──────────────────────────────────────────────────────
+function doLogin() {
+  var email = (document.getElementById('login-email').value || '').trim();
+  var mdp   = document.getElementById('login-mdp').value || '';
+  var btn   = document.getElementById('login-btn');
+  var err   = document.getElementById('login-error');
+
+  if (!email || !mdp) {
+    err.textContent = 'Veuillez renseigner email et mot de passe.';
+    err.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Connexion en cours…';
+  err.style.display = 'none';
+
+  callScript({ action: 'login', email: email, motdepasse: mdp }, function(res) {
+    if (res && res.ok) {
+      SESSION.email = email;
+      SESSION.nom   = res.nom || email;
+      SESSION.token = res.token || '';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('save-bar').style.display = 'flex';
+      document.body.classList.add('logged-in');
+      document.getElementById('save-info').textContent = '👤 ' + SESSION.nom;
+      // Chercher dossier existant
+      chargerDossier();
+    } else {
+      err.textContent = (res && res.error) || 'Erreur de connexion.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Accéder au formulaire';
+    }
+  });
+}
+
+// Appui Entrée sur les champs login
+document.addEventListener('DOMContentLoaded', function() {
+  ['login-email','login-mdp'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+});
+
+// ── Appel Apps Script ─────────────────────────────────────────
+function callScript(payload, callback) {
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(callback)
+  .catch(function(e) {
+    callback({ ok: false, error: 'Erreur réseau : ' + e.message });
+  });
+}
+
+// ── Collecter toutes les valeurs du formulaire ─────────────────
+function collecterDossier() {
+  var data = {};
+  document.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el) {
+    if (!el.id || el.type === 'file' || el.type === 'radio' || el.type === 'checkbox') return;
+    data[el.id] = el.value;
+  });
+  // Radios
+  document.querySelectorAll('input[type=radio]:checked').forEach(function(el) {
+    data['radio__' + el.name] = el.value;
+  });
+  // Checkbox
+  var rgpd = document.getElementById('rgpd-consent');
+  if (rgpd) data['rgpd-consent'] = rgpd.checked;
+  return data;
+}
+
+// ── Restaurer les valeurs ─────────────────────────────────────
+function restaurerDossier(data) {
+  if (!data) return;
+  Object.keys(data).forEach(function(key) {
+    if (key.startsWith('radio__')) {
+      var name = key.replace('radio__', '');
+      var val  = data[key];
+      var radio = document.querySelector('input[type=radio][name="' + name + '"][value="' + val + '"]');
+      if (radio) {
+        radio.checked = true;
+        // Déclencher onchange si existe
+        var evt = new Event('change', {bubbles:true});
+        radio.dispatchEvent(evt);
+      }
+    } else {
+      var el = document.getElementById(key);
+      if (!el) return;
+      if (el.type === 'checkbox') { el.checked = data[key]; }
+      else { el.value = data[key]; }
+      // Déclencher onchange pour les selects
+      if (el.tagName === 'SELECT' || el.type === 'date') {
+        var evt2 = new Event('change', {bubbles:true});
+        el.dispatchEvent(evt2);
+      }
+    }
+  });
+  // Re-déclencher les fonctions conditionnelles
+  setTimeout(function() {
+    if (typeof onFormeChange === 'function') onFormeChange();
+    if (typeof onDomiciliationChange === 'function') onDomiciliationChange();
+  }, 200);
+}
+
+// ── Sauvegarder ───────────────────────────────────────────────
+function sauvegarderDossier(showMsg) {
+  var dossier = collecterDossier();
+  var denomination = document.getElementById('denomination') ? document.getElementById('denomination').value : '';
+  var etape = document.querySelector('.section.active') ? document.querySelector('.section.active').id : 'sec-0';
+  var infoEl = document.getElementById('save-info');
+
+  callScript({
+    action: 'save',
+    email: SESSION.email,
+    denomination: denomination,
+    etape: etape,
+    dossier: dossier
+  }, function(res) {
+    if (res && res.ok) {
+      var now = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+      infoEl.textContent = '👤 ' + SESSION.nom + ' — Sauvegardé à ' + now;
+      if (showMsg) {
+        var bar = document.getElementById('save-bar');
+        bar.style.background = '#2e7d32';
+        setTimeout(function() { bar.style.background = ''; }, 2000);
+      }
+    }
+  });
+}
+
+// ── Charger dossier existant ──────────────────────────────────
+function chargerDossier() {
+  callScript({ action: 'load', email: SESSION.email }, function(res) {
+    if (res && res.ok && res.dossier) {
+      var msg = 'Vous avez un dossier en cours';
+      if (res.denomination) msg += ' (' + res.denomination + ')';
+      if (res.dateModif) msg += ', dernière sauvegarde le ' + res.dateModif;
+      msg += '.\n\nVoulez-vous reprendre ?';
+      if (confirm(msg)) {
+        // Rebuild assoc + man blocks first
+        var nb = res.dossier['nb-assoc'];
+        if (nb && typeof updateAssocCount === 'function') {
+          var nbEl = document.getElementById('nb-assoc');
+          if (nbEl) { nbEl.value = nb; updateAssocCount(nb); }
+        }
+        var nbMan = res.dossier['nb-man'];
+        if (nbMan && typeof updateManBlocks === 'function') {
+          var nbManEl = document.getElementById('nb-man');
+          if (nbManEl) { nbManEl.value = nbMan; updateManBlocks(); }
+        }
+        setTimeout(function() {
+          restaurerDossier(res.dossier);
+          // Aller à la bonne étape
+          if (res.etape && typeof goTo === 'function') {
+            var n = parseInt((res.etape || 'sec-0').replace('sec-','')) || 0;
+            goTo(n);
+          }
+        }, 300);
+      }
+    }
+  });
+}
+
+// ── Sauvegarde automatique toutes les 60s ─────────────────────
+setInterval(function() {
+  if (SESSION.email) sauvegarderDossier(false);
+}, 60000);
+
+// ── Déconnexion ───────────────────────────────────────────────
+function seDeconnecter() {
+  if (!confirm('Voulez-vous vous déconnecter ? Votre progression a été sauvegardée.')) return;
+  sauvegarderDossier(false);
+  setTimeout(function() {
+    SESSION = { email: '', nom: '', token: '' };
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('save-bar').style.display = 'none';
+    document.body.classList.remove('logged-in');
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-mdp').value = '';
+  }, 800);
+}
+
 </script>
 </body>
 </html>
